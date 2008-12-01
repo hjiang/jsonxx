@@ -1,13 +1,9 @@
+#include "jsonxx.h"
+
 #include <iostream>
 #include <cctype>
 
 namespace jsonxx {
-
-// A JSON Object
-class Object {
-  public:
-    bool parse(std::istream& input);
-};
 
 void eat_whitespaces(std::istream& input) {
     char ch;
@@ -95,4 +91,4 @@ bool Object::parse(std::istream& input) {
     return true;
 }
 
-}
+}  // namespace jsonxx

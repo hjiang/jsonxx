@@ -2,7 +2,13 @@
 #include <sstream>
 #include <string>
 
-#include "jsonxx.hh"
+#include "jsonxx.h"
+
+namespace jsonxx {
+bool parse_string(std::istream& input);
+bool parse_number(std::istream& input);
+bool match(const std::string& pattern, std::istream& input, bool ignore_ws = true);
+}
 
 int main() {
     using namespace jsonxx;
