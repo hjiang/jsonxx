@@ -4,6 +4,7 @@
 
 #include <cctype>
 #include <iostream>
+#include <sstream>
 
 namespace jsonxx {
 
@@ -75,19 +76,20 @@ bool parse_null(std::istream& input) {
     return false;
 }
 
-bool parse_number(std::istream& input) {
+bool parse_number(std::istream& input, long* value) {
     eat_whitespaces(input);
     char ch;
-    int num_digits = 0;
+    std::string value_str;
     while(input && !input.eof()) {
         input.get(ch);
         if (!isdigit(ch)) {
             input.putback(ch);
             break;
         }
-        num_digits++;
+        value_str.push_back(ch);
     }
-    if (num_digits > 0) {
+    if (value_str.size() > 0) {
+        std::istringstream(value_str) >> *value;
         return true;
     } else {
         return false;
@@ -105,7 +107,8 @@ bool Object::parse(std::istream& input) {
     if (!match(":", input)) {
         return false;
     }
-    if (!parse_number(input)) {
+    long value;
+    if (!parse_number(input, &value)) {
         return false;
     }
     if (!match("}", input)) {
@@ -130,7 +133,7 @@ bool Value::parse(std::istream& input) {
         type_ = STRING_;
         return true;
     }
-    if (parse_number(input)) {
+    if (parse_number(input, &integer_value_)) {
         return true;
     }
 

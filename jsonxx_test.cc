@@ -8,7 +8,7 @@
 
 namespace jsonxx {
 bool parse_string(std::istream& input, std::string* value);
-bool parse_number(std::istream& input);
+bool parse_number(std::istream& input, long* value);
 bool match(const std::string& pattern, std::istream& input, bool ignore_ws = true);
 }
 
@@ -36,7 +36,8 @@ int main() {
     {
         string teststr("6");
         istringstream input(teststr);
-        assert(parse_number(input));
+        long value;
+        assert(parse_number(input, &value));
     }
     {
         string teststr(" }");
