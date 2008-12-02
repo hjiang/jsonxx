@@ -52,9 +52,20 @@ inline bool Value::is<bool>() {
 }
 
 template<>
+inline bool Value::is<std::string>() {
+    return type_ == STRING_;
+}
+
+template<>
 inline bool Value::get<bool>() {
     assert(is<bool>());
     return bool_value_;
+}
+
+template<>
+inline std::string Value::get<std::string>() {
+    assert(is<std::string>());
+    return *string_value_;
 }
 
 }  // namespace jsonxx

@@ -127,6 +127,7 @@ bool Value::parse(std::istream& input) {
     if (parse_string(input, &string_value)) {
         string_value_ = new std::string();
         string_value_->swap(string_value);
+        type_ = STRING_;
         return true;
     }
     if (parse_number(input)) {

@@ -90,4 +90,12 @@ int main() {
         assert(v.is<Value::Null>());
         assert(!v.is<bool>());
     }
+    {
+        string teststr("\"field1\"");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+        assert(v.is<std::string>());
+        assert("field1" == v.get<std::string>());
+    }
 }
