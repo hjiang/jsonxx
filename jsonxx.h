@@ -14,7 +14,33 @@ class Object {
 // boolean, or null
 class Value {
   public:
+    class Null {};
+
+    Value();
+    ~Value();
     bool parse(std::istream& input);
+    template<typename T>
+    bool is();
+  private:
+    Value(const Value&);
+    Value& operator=(const Value&);
+    enum {
+        INTEGER_,
+        STRING_,
+        BOOL_,
+        NULL_,
+        INVALID_
+    } type_;
+    union {
+        long integer_value_;
+        std::string* string_value_;
+        bool bool_value_;
+    };
 };
+
+template<>
+inline bool Value::is<Value::Null>() {
+    return type_ == NULL_;
+}
 
 }  // namespace jsonxx

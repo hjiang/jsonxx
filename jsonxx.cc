@@ -110,6 +110,14 @@ bool Object::parse(std::istream& input) {
     return true;
 }
 
+Value::Value() : type_(INVALID_) {}
+
+Value::~Value() {
+    if (type_ == STRING_) {
+        delete string_value_;
+    }
+}
+
 bool Value::parse(std::istream& input) {
     if (parse_string(input)) {
         return true;
@@ -121,6 +129,7 @@ bool Value::parse(std::istream& input) {
         return true;
     }
     if (parse_null(input)) {
+        type_ = NULL_;
         return true;
     }
     return false;

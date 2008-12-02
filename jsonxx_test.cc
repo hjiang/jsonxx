@@ -81,5 +81,6 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<Value::Null>());
     }
 }
