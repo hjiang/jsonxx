@@ -2,8 +2,8 @@
 
 #include "jsonxx.h"
 
-#include <iostream>
 #include <cctype>
+#include <iostream>
 
 namespace jsonxx {
 
@@ -57,9 +57,11 @@ bool parse_string(std::istream& input) {
 
 bool parse_bool(std::istream& input, bool* value) {
     if (match("true", input))  {
+        *value = true;
         return true;
     }
     if (match("false", input)) {
+        *value = false;
         return true;
     }
     return false;
@@ -126,10 +128,8 @@ bool Value::parse(std::istream& input) {
         return true;
     }
 
-    bool bv;
-    if (parse_bool(input, &bv)) {
+    if (parse_bool(input, &bool_value_)) {
         type_ = BOOL_;
-        bool_value_ = bv;
         return true;
     }
     if (parse_null(input)) {

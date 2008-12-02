@@ -1,5 +1,6 @@
 // Author: Hong Jiang <hong@hjiang.net>
 
+#include <cassert>
 #include <iostream>
 
 namespace jsonxx {
