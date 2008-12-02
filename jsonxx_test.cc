@@ -7,7 +7,7 @@
 #include "jsonxx.h"
 
 namespace jsonxx {
-bool parse_string(std::istream& input);
+bool parse_string(std::istream& input, std::string* value);
 bool parse_number(std::istream& input);
 bool match(const std::string& pattern, std::istream& input, bool ignore_ws = true);
 }
@@ -17,18 +17,21 @@ int main() {
     using namespace std;
     {
         string teststr("\"field1\"");
+        string value;
         istringstream input(teststr);
-        assert(parse_string(input));
+        assert(parse_string(input, &value));
     }
     {
         string teststr("\"  field1\"");
+        string value;
         istringstream input(teststr);
-        assert(parse_string(input));
+        assert(parse_string(input, &value));
     }
     {
         string teststr("  \"field1\"");
+        string value;
         istringstream input(teststr);
-        assert(parse_string(input));
+        assert(parse_string(input, &value));
     }
     {
         string teststr("6");

@@ -37,7 +37,7 @@ bool match(const std::string& pattern, std::istream& input,
     return cur == pattern.end();
 }
 
-bool parse_string(std::istream& input) {
+bool parse_string(std::istream& input, std::string* value) {
     if (!match("\"", input))  {
         return false;
     }
@@ -47,6 +47,7 @@ bool parse_string(std::istream& input) {
         if (ch == '"') {
             break;
         }
+        value->push_back(ch);
     }
     if (input && ch == '"') {
         return true;
@@ -97,7 +98,8 @@ bool Object::parse(std::istream& input) {
     if (!match("{", input)) {
         return false;
     }
-    if (!parse_string(input)) {
+    std::string key;
+    if (!parse_string(input, &key)) {
         return false;
     }
     if (!match(":", input)) {
@@ -121,7 +123,10 @@ Value::~Value() {
 }
 
 bool Value::parse(std::istream& input) {
-    if (parse_string(input)) {
+    std::string string_value;
+    if (parse_string(input, &string_value)) {
+        string_value_ = new std::string();
+        string_value_->swap(string_value);
         return true;
     }
     if (parse_number(input)) {
