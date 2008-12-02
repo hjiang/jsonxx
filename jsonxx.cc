@@ -55,7 +55,7 @@ bool parse_string(std::istream& input) {
     }
 }
 
-bool parse_bool(std::istream& input) {
+bool parse_bool(std::istream& input, bool* value) {
     if (match("true", input))  {
         return true;
     }
@@ -125,7 +125,11 @@ bool Value::parse(std::istream& input) {
     if (parse_number(input)) {
         return true;
     }
-    if (parse_bool(input)) {
+
+    bool bv;
+    if (parse_bool(input, &bv)) {
+        type_ = BOOL_;
+        bool_value_ = bv;
         return true;
     }
     if (parse_null(input)) {

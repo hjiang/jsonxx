@@ -21,6 +21,8 @@ class Value {
     bool parse(std::istream& input);
     template<typename T>
     bool is();
+    template<typename T>
+    T get();
   private:
     Value(const Value&);
     Value& operator=(const Value&);
@@ -41,6 +43,17 @@ class Value {
 template<>
 inline bool Value::is<Value::Null>() {
     return type_ == NULL_;
+}
+
+template<>
+inline bool Value::is<bool>() {
+    return type_ == BOOL_;
+}
+
+template<>
+inline bool Value::get<bool>() {
+    assert(is<bool>());
+    return bool_value_;
 }
 
 }  // namespace jsonxx

@@ -69,12 +69,15 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<bool>());
     }
     {
         string teststr("false");
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<bool>());
+        assert(v.get<bool>() == false);
     }
     {
         string teststr("null");
@@ -82,5 +85,6 @@ int main() {
         Value v;
         assert(v.parse(input));
         assert(v.is<Value::Null>());
+        assert(!v.is<bool>());
     }
 }
