@@ -1,3 +1,5 @@
+// Author: Hong Jiang <hong@hjiang.net>
+
 #include <iostream>
 
 namespace jsonxx {
