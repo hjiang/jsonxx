@@ -52,4 +52,34 @@ int main() {
         Object o;
         assert(!o.parse(input));
     }
+    {
+        string teststr("6");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
+    {
+        string teststr("asdf");
+        istringstream input(teststr);
+        Value v;
+        assert(!v.parse(input));
+    }
+    {
+        string teststr("true");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
+    {
+        string teststr("false");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
+    {
+        string teststr("null");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
 }

@@ -55,6 +55,23 @@ bool parse_string(std::istream& input) {
     }
 }
 
+bool parse_bool(std::istream& input) {
+    if (match("true", input))  {
+        return true;
+    }
+    if (match("false", input)) {
+        return true;
+    }
+    return false;
+}
+
+bool parse_null(std::istream& input) {
+    if (match("null", input))  {
+        return true;
+    }
+    return false;
+}
+
 bool parse_number(std::istream& input) {
     eat_whitespaces(input);
     char ch;
@@ -91,6 +108,22 @@ bool Object::parse(std::istream& input) {
         return false;
     }
     return true;
+}
+
+bool Value::parse(std::istream& input) {
+    if (parse_string(input)) {
+        return true;
+    }
+    if (parse_number(input)) {
+        return true;
+    }
+    if (parse_bool(input)) {
+        return true;
+    }
+    if (parse_null(input)) {
+        return true;
+    }
+    return false;
 }
 
 }  // namespace jsonxx
