@@ -99,4 +99,10 @@ int main() {
         assert(v.is<std::string>());
         assert("field1" == v.get<std::string>());
     }
+    {
+        string teststr("[\"field1\", 6]");
+        istringstream input(teststr);
+        Array v;
+        assert(v.parse(input));
+    }
 }

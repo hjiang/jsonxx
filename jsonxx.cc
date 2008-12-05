@@ -148,4 +148,22 @@ bool Value::parse(std::istream& input) {
     return false;
 }
 
+bool Array::parse(std::istream& input) {
+    if (!match("[", input)) {
+        return false;
+    }
+
+    do {
+        Value v;
+        if (!v.parse(input)) {
+            break;
+        }
+    } while (match(",", input));
+
+    if (!match("]", input)) {
+        return false;
+    }
+    return true;
+}
+
 }  // namespace jsonxx
