@@ -104,9 +104,10 @@ int main() {
         istringstream input(teststr);
         Array v;
         assert(v.parse(input));
-        assert(v.is<std::string>(0));
+        assert(v.has<std::string>(0));
         assert("field1" == v.get<std::string>(0));
-        assert(v.is<long>(1));
+        assert(v.has<long>(1));
         assert(6 == v.get<long>(1));
+        assert(!v.has<bool>(2));
     }
 }

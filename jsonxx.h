@@ -15,6 +15,14 @@ class Value;
 class Object {
   public:
     bool parse(std::istream& input);
+
+    template <typename T>
+    bool has(const std::string& key);
+
+    // Always call has<>() first. If the key doesn't exist, consider
+    // the behavior undefined.
+    template <typename T>
+    T& get(const std::string& key);
   private:
     std::map<std::string, Value*> value_map_;
 };
@@ -29,7 +37,7 @@ class Array {
     unsigned int size() { return values_.size(); }
 
     template <typename T>
-    bool is(unsigned int i);
+    bool has(unsigned int i);
 
     template <typename T>
     T& get(unsigned int i);
@@ -69,15 +77,29 @@ class Value {
 };
 
 template <typename T>
-bool Array::is(unsigned int i) {
-    assert(i < size());
-    return values_[i]->is<T>();
+bool Array::has(unsigned int i) {
+    if (i >= size()) {
+        return false;
+    } else {
+        return values_[i]->is<T>();
+    }
 }
 
 template <typename T>
 T& Array::get(unsigned int i) {
     assert(i < size());
     return values_[i]->get<T>();
+}
+
+template <typename T>
+bool Object::has(const std::string& key) {
+    return value_map_.count(key) > 0 && value_map_[key]->is<T>();
+}
+
+template <typename T>
+T& Object::get(const std::string& key) {
+    assert(has<T>(key));
+    return value_map_[key]->get<T>();
 }
 
 template<>
