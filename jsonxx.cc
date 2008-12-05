@@ -134,6 +134,7 @@ bool Value::parse(std::istream& input) {
         return true;
     }
     if (parse_number(input, &integer_value_)) {
+        type_ = INTEGER_;
         return true;
     }
 
@@ -148,16 +149,24 @@ bool Value::parse(std::istream& input) {
     return false;
 }
 
+Array::~Array() {
+    for (unsigned int i = 0; i < values_.size(); ++i) {
+        delete values_[i];
+    }
+}
+
 bool Array::parse(std::istream& input) {
     if (!match("[", input)) {
         return false;
     }
 
     do {
-        Value v;
-        if (!v.parse(input)) {
+        Value* v = new Value();
+        if (!v->parse(input)) {
+            delete v;
             break;
         }
+        values_.push_back(v);
     } while (match(",", input));
 
     if (!match("]", input)) {
