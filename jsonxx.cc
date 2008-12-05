@@ -152,6 +152,18 @@ bool Value::parse(std::istream& input) {
         type_ = NULL_;
         return true;
     }
+    array_value_ = new Array();
+    if (array_value_->parse(input)) {
+        type_ = ARRAY_;
+        return true;
+    }
+    delete array_value_;
+    object_value_ = new Object();
+    if (object_value_->parse(input)) {
+        type_ = OBJECT_;
+        return true;
+    }
+    delete object_value_;
     return false;
 }
 

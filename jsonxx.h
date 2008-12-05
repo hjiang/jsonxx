@@ -67,12 +67,16 @@ class Value {
         STRING_,
         BOOL_,
         NULL_,
+        ARRAY_,
+        OBJECT_,
         INVALID_
     } type_;
     union {
         long integer_value_;
         std::string* string_value_;
         bool bool_value_;
+        Array* array_value_;
+        Object* object_value_;
     };
 };
 
@@ -123,6 +127,16 @@ inline bool Value::is<long>() {
 }
 
 template<>
+inline bool Value::is<Array>() {
+    return type_ == ARRAY_;
+}
+
+template<>
+inline bool Value::is<Object>() {
+    return type_ == OBJECT_;
+}
+
+template<>
 inline bool& Value::get<bool>() {
     assert(is<bool>());
     return bool_value_;
@@ -138,6 +152,18 @@ template<>
 inline long& Value::get<long>() {
     assert(is<long>());
     return integer_value_;
+}
+
+template<>
+inline Array& Value::get<Array>() {
+    assert(is<Array>());
+    return *array_value_;
+}
+
+template<>
+inline Object& Value::get<Object>() {
+    assert(is<Object>());
+    return *object_value_;
 }
 
 }  // namespace jsonxx

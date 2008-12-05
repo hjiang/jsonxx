@@ -110,4 +110,25 @@ int main() {
         assert(6 == v.get<long>(1));
         assert(!v.has<bool>(2));
     }
+    {
+        string teststr(
+                "{"
+                "  \"foo\" : 1,"
+                "  \"bar\" : false,"
+                "  \"person\" : {\"name\" : \"GWB\", \"age\" : 60},"
+                "  \"data\": [\"abcd\", 42]"
+                "}"
+                       );
+        istringstream input(teststr);
+        Object o;
+        assert(o.parse(input));
+        assert(1 == o.get<long>("foo"));
+        assert(o.has<bool>("bar"));
+        assert(o.has<Object>("person"));
+        assert(o.get<Object>("person").has<long>("age"));
+        assert(o.has<Array>("data"));
+        assert(o.get<Array>("data").get<long>(1) == 42);
+        assert(o.get<Array>("data").get<string>(0) == "abcd");
+        assert(!o.has<long>("data"));
+    }
 }
