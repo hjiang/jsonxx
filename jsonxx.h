@@ -2,14 +2,21 @@
 
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <vector>
 
 namespace jsonxx {
+
+// TODO: *::parse() should be static functions.
+
+class Value;
 
 // A JSON Object
 class Object {
   public:
     bool parse(std::istream& input);
+  private:
+    std::map<std::string, Value*> value_map_;
 };
 
 class Value;

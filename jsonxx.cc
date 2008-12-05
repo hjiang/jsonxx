@@ -100,17 +100,23 @@ bool Object::parse(std::istream& input) {
     if (!match("{", input)) {
         return false;
     }
-    std::string key;
-    if (!parse_string(input, &key)) {
-        return false;
-    }
-    if (!match(":", input)) {
-        return false;
-    }
-    long value;
-    if (!parse_number(input, &value)) {
-        return false;
-    }
+
+    do {
+        std::string key;
+        if (!parse_string(input, &key)) {
+            return false;
+        }
+        if (!match(":", input)) {
+            return false;
+        }
+        Value* v = new Value();
+        if (!v->parse(input)) {
+            delete v;
+            break;
+        }
+        value_map_[key] = v;
+    } while (match(",", input));
+
     if (!match("}", input)) {
         return false;
     }
