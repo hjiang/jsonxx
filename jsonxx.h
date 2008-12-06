@@ -14,6 +14,8 @@ class Value;
 // A JSON Object
 class Object {
   public:
+    Object();
+    ~Object();
     bool parse(std::istream& input);
 
     template <typename T>
@@ -24,6 +26,9 @@ class Object {
     template <typename T>
     T& get(const std::string& key);
   private:
+    Object(const Object&);
+    Object& operator=(const Object&);
+
     std::map<std::string, Value*> value_map_;
 };
 
@@ -31,6 +36,7 @@ class Value;
 
 class Array {
   public:
+    Array();
     ~Array();
     bool parse(std::istream& input);
 
@@ -43,6 +49,8 @@ class Array {
     T& get(unsigned int i);
 
   private:
+    Array(const Array&);
+    Array& operator=(const Array&);
     std::vector<Value*> values_;
 };
 

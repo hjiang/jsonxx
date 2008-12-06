@@ -96,6 +96,15 @@ bool parse_number(std::istream& input, long* value) {
     }
 }
 
+Object::Object() : value_map_() {}
+
+Object::~Object() {
+    std::map<std::string, Value*>::iterator i;
+    for (i = value_map_.begin(); i != value_map_.end(); ++i) {
+        delete i->second;
+    }
+}
+
 bool Object::parse(std::istream& input) {
     if (!match("{", input)) {
         return false;
@@ -128,6 +137,12 @@ Value::Value() : type_(INVALID_) {}
 Value::~Value() {
     if (type_ == STRING_) {
         delete string_value_;
+    }
+    if (type_ == OBJECT_) {
+        delete object_value_;
+    }
+    if (type_ == ARRAY_) {
+        delete array_value_;
     }
 }
 
@@ -166,6 +181,8 @@ bool Value::parse(std::istream& input) {
     delete object_value_;
     return false;
 }
+
+Array::Array() : values_() {}
 
 Array::~Array() {
     for (unsigned int i = 0; i < values_.size(); ++i) {
