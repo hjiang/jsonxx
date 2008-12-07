@@ -63,6 +63,18 @@ int main() {
         assert(v.parse(input));
     }
     {
+        string teststr("+6");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
+    {
+        string teststr("-6");
+        istringstream input(teststr);
+        Value v;
+        assert(v.parse(input));
+    }
+    {
         string teststr("asdf");
         istringstream input(teststr);
         Value v;

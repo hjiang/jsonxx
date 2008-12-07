@@ -80,6 +80,12 @@ bool parse_number(std::istream& input, long* value) {
     eat_whitespaces(input);
     char ch;
     std::string value_str;
+    int sign = 1;
+    if (match("-", input)) {
+        sign = -1;
+    } else {
+        match("+", input);
+    }
     while(input && !input.eof()) {
         input.get(ch);
         if (!isdigit(ch)) {
