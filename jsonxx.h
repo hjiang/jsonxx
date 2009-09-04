@@ -19,12 +19,12 @@ class Object {
     bool parse(std::istream& input);
 
     template <typename T>
-    bool has(const std::string& key);
+    bool has(const std::string& key) const;
 
     // Always call has<>() first. If the key doesn't exist, consider
     // the behavior undefined.
     template <typename T>
-    T& get(const std::string& key);
+    T& get(const std::string& key) const;
 
     const std::map<std::string, Value*>& kv_map() { return value_map_; }
   private:
@@ -42,13 +42,13 @@ class Array {
     ~Array();
     bool parse(std::istream& input);
 
-    unsigned int size() { return values_.size(); }
+    unsigned int size() const { return values_.size(); }
 
     template <typename T>
-    bool has(unsigned int i);
+    bool has(unsigned int i) const;
 
     template <typename T>
-    T& get(unsigned int i);
+    T& get(unsigned int i) const;
 
   private:
     Array(const Array&);
@@ -91,29 +91,32 @@ class Value {
 };
 
 template <typename T>
-bool Array::has(unsigned int i) {
+bool Array::has(unsigned int i) const {
     if (i >= size()) {
         return false;
     } else {
-        return values_[i]->is<T>();
+      Value* v = values_.at(i);
+      return v->is<T>();
     }
 }
 
 template <typename T>
-T& Array::get(unsigned int i) {
+T& Array::get(unsigned int i) const {
     assert(i < size());
-    return values_[i]->get<T>();
+    Value* v = values_.at(i);
+    return v->get<T>();
 }
 
 template <typename T>
-bool Object::has(const std::string& key) {
-    return value_map_.count(key) > 0 && value_map_[key]->is<T>();
+bool Object::has(const std::string& key) const {
+  std::map<std::string, Value*>::const_iterator it(value_map_.find(key));
+  return it != value_map_.end() && it->second->is<T>();
 }
 
 template <typename T>
-T& Object::get(const std::string& key) {
+T& Object::get(const std::string& key) const {
     assert(has<T>(key));
-    return value_map_[key]->get<T>();
+    return value_map_.find(key)->second->get<T>();
 }
 
 template<>
