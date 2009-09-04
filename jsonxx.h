@@ -25,6 +25,8 @@ class Object {
     // the behavior undefined.
     template <typename T>
     T& get(const std::string& key);
+
+    const std::map<std::string, Value*>& kv_map() { return value_map_; }
   private:
     Object(const Object&);
     Object& operator=(const Object&);
