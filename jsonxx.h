@@ -66,9 +66,11 @@ class Value {
     ~Value();
     bool parse(std::istream& input);
     template<typename T>
-    bool is();
+    bool is() const;
     template<typename T>
     T& get();
+    template<typename T>
+    const T& get() const;
   private:
     Value(const Value&);
     Value& operator=(const Value&);
@@ -120,32 +122,32 @@ T& Object::get(const std::string& key) const {
 }
 
 template<>
-inline bool Value::is<Value::Null>() {
+inline bool Value::is<Value::Null>() const {
     return type_ == NULL_;
 }
 
 template<>
-inline bool Value::is<bool>() {
+inline bool Value::is<bool>() const {
     return type_ == BOOL_;
 }
 
 template<>
-inline bool Value::is<std::string>() {
+inline bool Value::is<std::string>() const {
     return type_ == STRING_;
 }
 
 template<>
-inline bool Value::is<long>() {
+inline bool Value::is<long>() const {
     return type_ == INTEGER_;
 }
 
 template<>
-inline bool Value::is<Array>() {
+inline bool Value::is<Array>() const {
     return type_ == ARRAY_;
 }
 
 template<>
-inline bool Value::is<Object>() {
+inline bool Value::is<Object>() const {
     return type_ == OBJECT_;
 }
 
@@ -175,6 +177,36 @@ inline Array& Value::get<Array>() {
 
 template<>
 inline Object& Value::get<Object>() {
+    assert(is<Object>());
+    return *object_value_;
+}
+
+template<>
+inline const bool& Value::get<bool>() const {
+    assert(is<bool>());
+    return bool_value_;
+}
+
+template<>
+inline const std::string& Value::get<std::string>() const {
+    assert(is<std::string>());
+    return *string_value_;
+}
+
+template<>
+inline const long& Value::get<long>() const {
+    assert(is<long>());
+    return integer_value_;
+}
+
+template<>
+inline const Array& Value::get<Array>() const {
+    assert(is<Array>());
+    return *array_value_;
+}
+
+template<>
+inline const Object& Value::get<Object>() const {
     assert(is<Object>());
     return *object_value_;
 }
