@@ -212,3 +212,6 @@ inline const Object& Value::get<Object>() const {
 }
 
 }  // namespace jsonxx
+
+std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v);
+

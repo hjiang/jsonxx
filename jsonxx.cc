@@ -217,3 +217,16 @@ bool Array::parse(std::istream& input) {
 }
 
 }  // namespace jsonxx
+
+std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
+  if (v.is<long>()) {
+    return stream << v.get<long>();
+  } else if (v.is<std::string>()) {
+    return stream << '"'  << v.get<std::string>() << '"';
+  } else if (v.is<bool>()) {
+    return stream << v.get<bool>();
+  } else if (v.is<jsonxx::Value::Null>()) {
+    return stream << "null";
+  }
+  return stream;
+}

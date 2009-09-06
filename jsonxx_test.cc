@@ -110,6 +110,9 @@ int main() {
         assert(v.parse(input));
         assert(v.is<std::string>());
         assert("field1" == v.get<std::string>());
+        ostringstream stream;
+        stream << v;
+        assert(stream.str() == "\"field1\"");
     }
     {
         string teststr("[\"field1\", 6]");
