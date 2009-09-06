@@ -224,9 +224,41 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
   } else if (v.is<std::string>()) {
     return stream << '"'  << v.get<std::string>() << '"';
   } else if (v.is<bool>()) {
-    return stream << v.get<bool>();
+    if (v.get<bool>()) {
+      return stream << "true";
+    } else {
+      return stream << "false";
+    }
   } else if (v.is<jsonxx::Value::Null>()) {
     return stream << "null";
+  } else if (v.is<jsonxx::Object>()) {
+    return stream << v.get<jsonxx::Object>();
+  } else if (v.is<jsonxx::Array>()){
+    return stream << v.get<jsonxx::Array>();
   }
+  // Shouldn't reach here.
   return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v) {
+  stream << "[";
+  const std::vector<jsonxx::Value*>& values(v.values());
+  for (unsigned int i = 0; i < values.size()-1; ++i) {
+    stream << *(values[i]) << ", ";
+  }
+  return stream << *(values[values.size()-1]) << "]";
+}
+
+std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
+  stream << "{";
+  const std::map<std::string, jsonxx::Value*>& kv(v.kv_map());
+  for (std::map<std::string, jsonxx::Value*>::const_iterator i = kv.begin();
+       i != kv.end(); /**/) {
+    stream << i->first << ": " << *(i->second);
+    ++i;
+    if ( i != kv.end()) {
+      stream << ", ";
+    }
+  }
+  return stream << "}";
 }
