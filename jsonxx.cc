@@ -36,7 +36,37 @@ bool parse_string(std::istream& input, std::string* value) {
         if (ch == '"') {
             break;
         }
-        value->push_back(ch);
+        if (ch == '\\') {
+            input.get(ch);
+            switch(ch) {
+            case '"':
+            case '\\':
+            case '/':
+                value->push_back(ch);
+                break;
+            case 'b':
+                value->push_back('\b');
+                break;
+            case 'f':
+                value->push_back('\f');
+                break;
+            case 'n':
+                value->push_back('\n');
+                break;
+            case 'r':
+                value->push_back('\r');
+                break;
+            case 't':
+                value->push_back('\t');
+                break;
+            default:
+                value->push_back('\\');
+                value->push_back(ch);
+                break;
+            }
+        } else {
+            value->push_back(ch);
+        }
     }
     if (input && ch == '"') {
         return true;
@@ -206,13 +236,28 @@ bool Array::parse(std::istream& input) {
     return true;
 }
 
+static std::ostream& stream_string(std::ostream& stream,
+        const std::string& string) {
+    stream << '"';
+    for (std::string::const_iterator i = string.begin(),
+            e = string.end(); i != e; ++i) {
+        if (*i == '"' || *i == '\\') {
+            stream << '\\' << *i;
+        } else {
+            stream << *i;
+        }
+    }
+    stream << '"';
+    return stream;
+}
+
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
   if (v.is<long>()) {
     return stream << v.get<long>();
   } else if (v.is<std::string>()) {
-    return stream << '"'  << v.get<std::string>() << '"';
+    return jsonxx::stream_string(stream, v.get<std::string>());
   } else if (v.is<bool>()) {
     if (v.get<bool>()) {
       return stream << "true";
@@ -244,7 +289,8 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
   const std::map<std::string, jsonxx::Value*>& kv(v.kv_map());
   for (std::map<std::string, jsonxx::Value*>::const_iterator i = kv.begin();
        i != kv.end(); /**/) {
-    stream << i->first << ": " << *(i->second);
+    jsonxx::stream_string(stream, i->first);
+    stream << ": " << *(i->second);
     ++i;
     if ( i != kv.end()) {
       stream << ", ";
