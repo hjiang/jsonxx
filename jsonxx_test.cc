@@ -9,7 +9,7 @@
 namespace jsonxx {
 bool parse_string(std::istream& input, std::string* value);
 bool parse_number(std::istream& input, long* value);
-bool match(const std::string& pattern, std::istream& input, bool ignore_ws = true);
+bool match(const char* pattern, std::istream& input);
 }
 
 int main() {

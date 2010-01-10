@@ -19,14 +19,11 @@ void eat_whitespaces(std::istream& input) {
 // Try to consume characters from the input stream and match the
 // pattern string. Leading whitespaces from the input are ignored if
 // ignore_ws is true.
-bool match(const std::string& pattern, std::istream& input,
-           bool ignore_ws = true) {
-    if (ignore_ws) {
-        eat_whitespaces(input);
-    }
-    std::string::const_iterator cur(pattern.begin());
+bool match(const char* pattern, std::istream& input) {
+	eat_whitespaces(input);
+	const char* cur(pattern);
     char ch(0);
-    while(input && !input.eof() && cur != pattern.end()) {
+    while(input && !input.eof() && *cur != 0) {
         input.get(ch);
         if (ch != *cur) {
             input.putback(ch);
@@ -35,7 +32,7 @@ bool match(const std::string& pattern, std::istream& input,
             cur++;
         }
     }
-    return cur == pattern.end();
+    return *cur == 0;
 }
 
 bool parse_string(std::istream& input, std::string* value) {
