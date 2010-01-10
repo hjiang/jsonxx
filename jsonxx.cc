@@ -8,19 +8,10 @@
 
 namespace jsonxx {
 
-void eat_whitespaces(std::istream& input) {
-    char ch;
-    do {
-        input.get(ch);
-    } while(isspace(ch));
-    input.putback(ch);
-}
-
 // Try to consume characters from the input stream and match the
-// pattern string. Leading whitespaces from the input are ignored if
-// ignore_ws is true.
+// pattern string.
 bool match(const char* pattern, std::istream& input) {
-	eat_whitespaces(input);
+	input >> std::ws;
 	const char* cur(pattern);
     char ch(0);
     while(input && !input.eof() && *cur != 0) {
@@ -74,7 +65,7 @@ bool parse_null(std::istream& input) {
 }
 
 bool parse_number(std::istream& input, long* value) {
-    eat_whitespaces(input);
+	input >> std::ws;
     char ch;
     std::string value_str;
     int sign = 1;
