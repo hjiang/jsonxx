@@ -2,7 +2,12 @@ h1. Introduction
 
 JSON++ is a light-weight JSON parser written in C++.
 
-h2. Why another JSON parser?
+h1. Contributors
+
+http://github.com/hjiang
+http://github.com/elanthis
+
+h1. Why another JSON parser?
 
 Perhaps because web service clients are usually written in dynamic
 languages these days, none of the existing C++ JSON parsers suite my
@@ -15,7 +20,7 @@ for JSON++ were:
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
 
-h3. Usage
+h1. Usage
 
 The following snippet is from one of the unit tests. It's quite self-descriptive.
 
