@@ -96,28 +96,12 @@ bool parse_null(std::istream& input) {
 
 bool parse_number(std::istream& input, long* value) {
     input >> std::ws;
-    char ch;
-    std::string value_str;
-    int sign = 1;
-    if (match("-", input)) {
-        sign = -1;
-    } else {
-        match("+", input);
-    }
-    while(input && !input.eof()) {
-        input.get(ch);
-        if (!isdigit(ch)) {
-            input.putback(ch);
-            break;
-        }
-        value_str.push_back(ch);
-    }
-    if (value_str.size() > 0) {
-        std::istringstream(value_str) >> *value;
-        return true;
-    } else {
+    input >> *value;
+    if (input.fail()) {
+        input.clear();
         return false;
     }
+    return true;
 }
 
 Object::Object() : value_map_() {}
