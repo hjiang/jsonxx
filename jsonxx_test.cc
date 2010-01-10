@@ -20,24 +20,28 @@ int main() {
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
+        assert(value == "field1");
     }
     {
         string teststr("\"  field1\"");
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
+        assert(value == "  field1");
     }
     {
         string teststr("  \"field1\"");
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
+        assert(value == "field1");
     }
     {
         string teststr("6");
         istringstream input(teststr);
         long value;
         assert(parse_number(input, &value));
+        assert(value == 6);
     }
     {
         string teststr(" }");
@@ -61,18 +65,24 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<long>());
+        assert(v.get<long>() == 6);
     }
     {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<long>());
+        assert(v.get<long>() == 6);
     }
     {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
         assert(v.parse(input));
+        assert(v.is<long>());
+        assert(v.get<long>() == -6);
     }
     {
         string teststr("asdf");
@@ -86,6 +96,7 @@ int main() {
         Value v;
         assert(v.parse(input));
         assert(v.is<bool>());
+        assert(v.get<bool>());
     }
     {
         string teststr("false");
@@ -93,7 +104,7 @@ int main() {
         Value v;
         assert(v.parse(input));
         assert(v.is<bool>());
-        assert(v.get<bool>() == false);
+        assert(!v.get<bool>());
     }
     {
         string teststr("null");
