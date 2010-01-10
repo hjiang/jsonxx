@@ -11,8 +11,8 @@ namespace jsonxx {
 // Try to consume characters from the input stream and match the
 // pattern string.
 bool match(const char* pattern, std::istream& input) {
-	input >> std::ws;
-	const char* cur(pattern);
+    input >> std::ws;
+    const char* cur(pattern);
     char ch(0);
     while(input && !input.eof() && *cur != 0) {
         input.get(ch);
@@ -65,7 +65,7 @@ bool parse_null(std::istream& input) {
 }
 
 bool parse_number(std::istream& input, long* value) {
-	input >> std::ws;
+    input >> std::ws;
     char ch;
     std::string value_str;
     int sign = 1;
@@ -161,14 +161,14 @@ bool Value::parse(std::istream& input) {
         type_ = NULL_;
         return true;
     }
-	if (input.peek() == '[') {
-		array_value_ = new Array();
-		if (array_value_->parse(input)) {
-			type_ = ARRAY_;
-			return true;
-		}
-		delete array_value_;
-	}
+    if (input.peek() == '[') {
+        array_value_ = new Array();
+        if (array_value_->parse(input)) {
+            type_ = ARRAY_;
+            return true;
+        }
+        delete array_value_;
+    }
     object_value_ = new Object();
     if (object_value_->parse(input)) {
         type_ = OBJECT_;
