@@ -157,4 +157,13 @@ int main() {
         assert(o.get<Array>("data").get<string>(0) == "abcd");
         assert(!o.has<long>("data"));
     }
+	{
+		string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
+		istringstream input(teststr);
+		Object o;
+		assert(o.parse(input));
+		ostringstream output;
+		cout << output.str() << endl;
+		assert(output.str() == teststr);
+	}
 }

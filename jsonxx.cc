@@ -5,6 +5,7 @@
 #include <cctype>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 namespace jsonxx {
 
@@ -225,10 +226,39 @@ static std::ostream& stream_string(std::ostream& stream,
     stream << '"';
     for (std::string::const_iterator i = string.begin(),
             e = string.end(); i != e; ++i) {
-        if (*i == '"' || *i == '\\') {
-            stream << '\\' << *i;
-        } else {
-            stream << *i;
+		switch (*i) {
+		case '"':
+			stream << "\\\"";
+			break;
+		case '\\':
+			stream << "\\\\";
+			break;
+		case '/':
+			stream << "\\/";
+			break;
+		case '\b':
+			stream << "\\b";
+			break;
+		case '\f':
+			stream << "\\f";
+			break;
+		case '\n':
+			stream << "\\n";
+			break;
+		case '\r':
+			stream << "\\r";
+			break;
+		case '\t':
+			stream << "\\t";
+			break;
+		default:
+			if (*i < 32) {
+				stream << "\\u" << std::hex << std::setw(6) <<
+					std::setfill('0') << static_cast<int>(*i) << std::dec <<
+					std::setw(0);
+			} else {
+				stream << *i;
+			}
         }
     }
     stream << '"';
