@@ -115,6 +115,8 @@ Object::~Object() {
 }
 
 bool Object::parse(std::istream& input, Object& object) {
+	object.value_map_.clear();
+
     if (!match("{", input)) {
         return false;
     }
@@ -143,7 +145,7 @@ bool Object::parse(std::istream& input, Object& object) {
 
 Value::Value() : type_(INVALID_) {}
 
-Value::~Value() {
+void Value::reset() {
     if (type_ == STRING_) {
         delete string_value_;
     }
@@ -156,6 +158,8 @@ Value::~Value() {
 }
 
 bool Value::parse(std::istream& input, Value& value) {
+	value.reset();
+
     std::string string_value;
     if (parse_string(input, &string_value)) {
         value.string_value_ = new std::string();
@@ -202,6 +206,8 @@ Array::~Array() {
 }
 
 bool Array::parse(std::istream& input, Array& array) {
+	array.values_.clear();
+
     if (!match("[", input)) {
         return false;
     }

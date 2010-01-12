@@ -67,7 +67,8 @@ class Value {
   class Null {};
 
   Value();
-  ~Value();
+  ~Value() { reset(); }
+  void reset();
 
   static bool parse(std::istream& input, Value& value);
 
