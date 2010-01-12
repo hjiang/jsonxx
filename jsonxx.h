@@ -1,4 +1,6 @@
 // Author: Hong Jiang <hong@hjiang.net>
+// Contributors:
+//   Sean Middleditch <sean@middleditch.us>
 
 #include <cassert>
 #include <iostream>
@@ -6,8 +8,6 @@
 #include <vector>
 
 namespace jsonxx {
-
-// TODO: *::parse() should be static functions.
 
 class Value;
 
