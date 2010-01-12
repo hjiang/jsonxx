@@ -24,7 +24,9 @@ class Object {
   // Always call has<>() first. If the key doesn't exist, consider
   // the behavior undefined.
   template <typename T>
-  T& get(const std::string& key) const;
+  T& get(const std::string& key);
+  template <typename T>
+  const T& get(const std::string& key) const;
 
   const std::map<std::string, Value*>& kv_map() const { return value_map_; }
  private:
@@ -48,7 +50,9 @@ class Array {
   bool has(unsigned int i) const;
 
   template <typename T>
-  T& get(unsigned int i) const;
+  T& get(unsigned int i);
+  template <typename T>
+  const T& get(unsigned int i) const;
 
   const std::vector<Value*>& values() const {
     return values_;
@@ -107,9 +111,16 @@ bool Array::has(unsigned int i) const {
 }
 
 template <typename T>
-T& Array::get(unsigned int i) const {
+T& Array::get(unsigned int i) {
   assert(i < size());
   Value* v = values_.at(i);
+  return v->get<T>();
+}
+
+template <typename T>
+const T& Array::get(unsigned int i) const {
+  assert(i < size());
+  const Value* v = values_.at(i);
   return v->get<T>();
 }
 
@@ -120,7 +131,13 @@ bool Object::has(const std::string& key) const {
 }
 
 template <typename T>
-T& Object::get(const std::string& key) const {
+T& Object::get(const std::string& key) {
+  assert(has<T>(key));
+  return value_map_.find(key)->second->get<T>();
+}
+
+template <typename T>
+const T& Object::get(const std::string& key) const {
   assert(has<T>(key));
   return value_map_.find(key)->second->get<T>();
 }
