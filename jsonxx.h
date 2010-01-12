@@ -7,8 +7,6 @@
 
 namespace jsonxx {
 
-// TODO: *::parse() should be static functions.
-
 class Value;
 
 // A JSON Object
@@ -16,7 +14,8 @@ class Object {
  public:
   Object();
   ~Object();
-  bool parse(std::istream& input);
+
+  static bool parse(std::istream& input, Object& object);
 
   template <typename T>
   bool has(const std::string& key) const;
@@ -40,7 +39,8 @@ class Array {
  public:
   Array();
   ~Array();
-  bool parse(std::istream& input);
+
+  static bool parse(std::istream& input, Array& array);
 
   unsigned int size() const { return values_.size(); }
 
@@ -68,7 +68,9 @@ class Value {
 
   Value();
   ~Value();
-  bool parse(std::istream& input);
+
+  static bool parse(std::istream& input, Value& value);
+
   template<typename T>
   bool is() const;
   template<typename T>
