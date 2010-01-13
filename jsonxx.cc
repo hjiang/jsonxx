@@ -5,6 +5,7 @@
 #include <cctype>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 namespace jsonxx {
 
@@ -113,7 +114,9 @@ Object::~Object() {
     }
 }
 
-bool Object::parse(std::istream& input) {
+bool Object::parse(std::istream& input, Object& object) {
+	object.value_map_.clear();
+
     if (!match("{", input)) {
         return false;
     }
@@ -127,11 +130,11 @@ bool Object::parse(std::istream& input) {
             return false;
         }
         Value* v = new Value();
-        if (!v->parse(input)) {
+        if (!Value::parse(input, *v)) {
             delete v;
             break;
         }
-        value_map_[key] = v;
+        object.value_map_[key] = v;
     } while (match(",", input));
 
     if (!match("}", input)) {
@@ -142,7 +145,7 @@ bool Object::parse(std::istream& input) {
 
 Value::Value() : type_(INVALID_) {}
 
-Value::~Value() {
+void Value::reset() {
     if (type_ == STRING_) {
         delete string_value_;
     }
@@ -154,41 +157,43 @@ Value::~Value() {
     }
 }
 
-bool Value::parse(std::istream& input) {
+bool Value::parse(std::istream& input, Value& value) {
+	value.reset();
+
     std::string string_value;
     if (parse_string(input, &string_value)) {
-        string_value_ = new std::string();
-        string_value_->swap(string_value);
-        type_ = STRING_;
+        value.string_value_ = new std::string();
+        value.string_value_->swap(string_value);
+        value.type_ = STRING_;
         return true;
     }
-    if (parse_number(input, &integer_value_)) {
-        type_ = INTEGER_;
+    if (parse_number(input, &value.integer_value_)) {
+        value.type_ = INTEGER_;
         return true;
     }
 
-    if (parse_bool(input, &bool_value_)) {
-        type_ = BOOL_;
+    if (parse_bool(input, &value.bool_value_)) {
+        value.type_ = BOOL_;
         return true;
     }
     if (parse_null(input)) {
-        type_ = NULL_;
+        value.type_ = NULL_;
         return true;
     }
     if (input.peek() == '[') {
-        array_value_ = new Array();
-        if (array_value_->parse(input)) {
-            type_ = ARRAY_;
+        value.array_value_ = new Array();
+        if (Array::parse(input, *value.array_value_)) {
+            value.type_ = ARRAY_;
             return true;
         }
-        delete array_value_;
+        delete value.array_value_;
     }
-    object_value_ = new Object();
-    if (object_value_->parse(input)) {
-        type_ = OBJECT_;
+    value.object_value_ = new Object();
+    if (Object::parse(input, *value.object_value_)) {
+        value.type_ = OBJECT_;
         return true;
     }
-    delete object_value_;
+    delete value.object_value_;
     return false;
 }
 
@@ -200,18 +205,20 @@ Array::~Array() {
     }
 }
 
-bool Array::parse(std::istream& input) {
+bool Array::parse(std::istream& input, Array& array) {
+	array.values_.clear();
+
     if (!match("[", input)) {
         return false;
     }
 
     do {
         Value* v = new Value();
-        if (!v->parse(input)) {
+        if (!Value::parse(input, *v)) {
             delete v;
             break;
         }
-        values_.push_back(v);
+        array.values_.push_back(v);
     } while (match(",", input));
 
     if (!match("]", input)) {
@@ -225,10 +232,39 @@ static std::ostream& stream_string(std::ostream& stream,
     stream << '"';
     for (std::string::const_iterator i = string.begin(),
             e = string.end(); i != e; ++i) {
-        if (*i == '"' || *i == '\\') {
-            stream << '\\' << *i;
-        } else {
-            stream << *i;
+		switch (*i) {
+		case '"':
+			stream << "\\\"";
+			break;
+		case '\\':
+			stream << "\\\\";
+			break;
+		case '/':
+			stream << "\\/";
+			break;
+		case '\b':
+			stream << "\\b";
+			break;
+		case '\f':
+			stream << "\\f";
+			break;
+		case '\n':
+			stream << "\\n";
+			break;
+		case '\r':
+			stream << "\\r";
+			break;
+		case '\t':
+			stream << "\\t";
+			break;
+		default:
+			if (*i < 32) {
+				stream << "\\u" << std::hex << std::setw(6) <<
+					std::setfill('0') << static_cast<int>(*i) << std::dec <<
+					std::setw(0);
+			} else {
+				stream << *i;
+			}
         }
     }
     stream << '"';

@@ -52,19 +52,19 @@ int main() {
         string teststr("{ \"field1\" : 6 }");
         istringstream input(teststr);
         Object o;
-        assert(o.parse(input));
+        assert(Object::parse(input, o));
     }
     {
         string teststr("{ \"field1 : 6 }");
         istringstream input(teststr);
         Object o;
-        assert(!o.parse(input));
+        assert(!Object::parse(input, o));
     }
     {
         string teststr("6");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<long>());
         assert(v.get<long>() == 6);
     }
@@ -72,7 +72,7 @@ int main() {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<long>());
         assert(v.get<long>() == 6);
     }
@@ -80,7 +80,7 @@ int main() {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<long>());
         assert(v.get<long>() == -6);
     }
@@ -88,13 +88,13 @@ int main() {
         string teststr("asdf");
         istringstream input(teststr);
         Value v;
-        assert(!v.parse(input));
+        assert(!Value::parse(input, v));
     }
     {
         string teststr("true");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<bool>());
         assert(v.get<bool>());
     }
@@ -102,7 +102,7 @@ int main() {
         string teststr("false");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<bool>());
         assert(!v.get<bool>());
     }
@@ -110,7 +110,7 @@ int main() {
         string teststr("null");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<Value::Null>());
         assert(!v.is<bool>());
     }
@@ -118,7 +118,7 @@ int main() {
         string teststr("\"field1\"");
         istringstream input(teststr);
         Value v;
-        assert(v.parse(input));
+        assert(Value::parse(input, v));
         assert(v.is<std::string>());
         assert("field1" == v.get<std::string>());
         ostringstream stream;
@@ -128,13 +128,13 @@ int main() {
     {
         string teststr("[\"field1\", 6]");
         istringstream input(teststr);
-        Array v;
-        assert(v.parse(input));
-        assert(v.has<std::string>(0));
-        assert("field1" == v.get<std::string>(0));
-        assert(v.has<long>(1));
-        assert(6 == v.get<long>(1));
-        assert(!v.has<bool>(2));
+        Array a;
+        assert(Array::parse(input, a));
+        assert(a.has<std::string>(0));
+        assert("field1" == a.get<std::string>(0));
+        assert(a.has<long>(1));
+        assert(6 == a.get<long>(1));
+        assert(!a.has<bool>(2));
     }
     {
         string teststr(
@@ -147,7 +147,7 @@ int main() {
                        );
         istringstream input(teststr);
         Object o;
-        assert(o.parse(input));
+        assert(Object::parse(input, o));
         assert(1 == o.get<long>("foo"));
         assert(o.has<bool>("bar"));
         assert(o.has<Object>("person"));
@@ -157,4 +157,13 @@ int main() {
         assert(o.get<Array>("data").get<string>(0) == "abcd");
         assert(!o.has<long>("data"));
     }
+	{
+		string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
+		istringstream input(teststr);
+		Object o;
+		assert(Object::parse(input, o));
+		ostringstream output;
+		cout << output.str() << endl;
+		assert(output.str() == teststr);
+	}
 }
