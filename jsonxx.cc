@@ -1,3 +1,5 @@
+// -*- mode: c++; c-basic-offset: 4; -*-
+
 // Author: Hong Jiang <hong@hjiang.net>
 
 #include "jsonxx.h"
@@ -95,7 +97,7 @@ bool parse_null(std::istream& input) {
     return false;
 }
 
-bool parse_number(std::istream& input, long* value) {
+bool parse_number(std::istream& input, double* value) {
     input >> std::ws;
     input >> *value;
     if (input.fail()) {
@@ -167,8 +169,8 @@ bool Value::parse(std::istream& input, Value& value) {
         value.type_ = STRING_;
         return true;
     }
-    if (parse_number(input, &value.integer_value_)) {
-        value.type_ = INTEGER_;
+    if (parse_number(input, &value.number_value_)) {
+        value.type_ = NUMBER_;
         return true;
     }
 
@@ -274,8 +276,8 @@ static std::ostream& stream_string(std::ostream& stream,
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
-  if (v.is<long>()) {
-    return stream << v.get<long>();
+  if (v.is<double>()) {
+    return stream << v.get<double>();
   } else if (v.is<std::string>()) {
     return jsonxx::stream_string(stream, v.get<std::string>());
   } else if (v.is<bool>()) {

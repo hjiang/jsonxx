@@ -10,7 +10,7 @@
 
 namespace jsonxx {
 bool parse_string(std::istream& input, std::string* value);
-bool parse_number(std::istream& input, long* value);
+bool parse_number(std::istream& input, double* value);
 bool match(const char* pattern, std::istream& input);
 }
 
@@ -41,7 +41,7 @@ int main() {
     {
         string teststr("6");
         istringstream input(teststr);
-        long value;
+        double value;
         assert(parse_number(input, &value));
         assert(value == 6);
     }
@@ -67,24 +67,24 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<long>());
-        assert(v.get<long>() == 6);
+        assert(v.is<double>());
+        assert(v.get<double>() == 6);
     }
     {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<long>());
-        assert(v.get<long>() == 6);
+        assert(v.is<double>());
+        assert(v.get<double>() == 6);
     }
     {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<long>());
-        assert(v.get<long>() == -6);
+        assert(v.is<double>());
+        assert(v.get<double>() == -6);
     }
     {
         string teststr("asdf");
@@ -134,8 +134,8 @@ int main() {
         assert(Array::parse(input, a));
         assert(a.has<std::string>(0));
         assert("field1" == a.get<std::string>(0));
-        assert(a.has<long>(1));
-        assert(6 == a.get<long>(1));
+        assert(a.has<double>(1));
+        assert(6 == a.get<double>(1));
         assert(!a.has<bool>(2));
     }
     {
@@ -144,20 +144,21 @@ int main() {
                 "  \"foo\" : 1,"
                 "  \"bar\" : false,"
                 "  \"person\" : {\"name\" : \"GWB\", \"age\" : 60},"
-                "  \"data\": [\"abcd\", 42]"
+                "  \"data\": [\"abcd\", 42, 54.7]"
                 "}"
                        );
         istringstream input(teststr);
         Object o;
         assert(Object::parse(input, o));
-        assert(1 == o.get<long>("foo"));
+        assert(1 == o.get<double>("foo"));
         assert(o.has<bool>("bar"));
         assert(o.has<Object>("person"));
-        assert(o.get<Object>("person").has<long>("age"));
+        assert(o.get<Object>("person").has<double>("age"));
         assert(o.has<Array>("data"));
-        assert(o.get<Array>("data").get<long>(1) == 42);
+        assert(o.get<Array>("data").get<double>(1) == 42);
         assert(o.get<Array>("data").get<string>(0) == "abcd");
-        assert(!o.has<long>("data"));
+        assert(o.get<Array>("data").get<double>(2) == 54.7);
+        assert(!o.has<double>("data"));
     }
     {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");

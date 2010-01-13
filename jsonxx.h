@@ -1,3 +1,5 @@
+// -*- mode: c++; c-basic-offset: 4; -*-
+
 // Author: Hong Jiang <hong@hjiang.net>
 // Contributors:
 //   Sean Middleditch <sean@middleditch.us>
@@ -88,7 +90,7 @@ class Value {
   Value(const Value&);
   Value& operator=(const Value&);
   enum {
-    INTEGER_,
+    NUMBER_,
     STRING_,
     BOOL_,
     NULL_,
@@ -97,7 +99,7 @@ class Value {
     INVALID_
   } type_;
   union {
-    long integer_value_;
+    double number_value_;
     std::string* string_value_;
     bool bool_value_;
     Array* array_value_;
@@ -163,8 +165,8 @@ inline bool Value::is<std::string>() const {
 }
 
 template<>
-inline bool Value::is<long>() const {
-  return type_ == INTEGER_;
+inline bool Value::is<double>() const {
+  return type_ == NUMBER_;
 }
 
 template<>
@@ -190,9 +192,9 @@ inline std::string& Value::get<std::string>() {
 }
 
 template<>
-inline long& Value::get<long>() {
-  assert(is<long>());
-  return integer_value_;
+inline double& Value::get<double>() {
+  assert(is<double>());
+  return number_value_;
 }
 
 template<>
@@ -220,9 +222,9 @@ inline const std::string& Value::get<std::string>() const {
 }
 
 template<>
-inline const long& Value::get<long>() const {
-  assert(is<long>());
-  return integer_value_;
+inline const double& Value::get<double>() const {
+  assert(is<double>());
+  return number_value_;
 }
 
 template<>
