@@ -1,3 +1,5 @@
+// -*- mode: c++; c-basic-offset: 4; -*-
+
 // Author: Hong Jiang <hong@hjiang.net>
 
 #include <cassert>
@@ -157,13 +159,12 @@ int main() {
         assert(o.get<Array>("data").get<string>(0) == "abcd");
         assert(!o.has<long>("data"));
     }
-	{
-		string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
-		istringstream input(teststr);
-		Object o;
-		assert(Object::parse(input, o));
-		ostringstream output;
-		cout << output.str() << endl;
-		assert(output.str() == teststr);
-	}
+    {
+        string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
+        istringstream input(teststr);
+        Object o;
+        assert(Object::parse(input, o));
+        assert(o.has<std::string>("bar"));
+        assert(o.get<std::string>("bar") == "a\rb\nc\td");
+    }
 }
