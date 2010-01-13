@@ -42,30 +42,30 @@ bool parse_string(std::istream& input, std::string* value) {
         if (ch == '\\') {
             input.get(ch);
             switch(ch) {
-            case '"':
-            case '\\':
-            case '/':
-                value->push_back(ch);
-                break;
-            case 'b':
-                value->push_back('\b');
-                break;
-            case 'f':
-                value->push_back('\f');
-                break;
-            case 'n':
-                value->push_back('\n');
-                break;
-            case 'r':
-                value->push_back('\r');
-                break;
-            case 't':
-                value->push_back('\t');
-                break;
-            default:
-                value->push_back('\\');
-                value->push_back(ch);
-                break;
+                case '"':
+                case '\\':
+                case '/':
+                    value->push_back(ch);
+                    break;
+                case 'b':
+                    value->push_back('\b');
+                    break;
+                case 'f':
+                    value->push_back('\f');
+                    break;
+                case 'n':
+                    value->push_back('\n');
+                    break;
+                case 'r':
+                    value->push_back('\r');
+                    break;
+                case 't':
+                    value->push_back('\t');
+                    break;
+                default:
+                    value->push_back('\\');
+                    value->push_back(ch);
+                    break;
             }
         } else {
             value->push_back(ch);
@@ -117,7 +117,7 @@ Object::~Object() {
 }
 
 bool Object::parse(std::istream& input, Object& object) {
-	object.value_map_.clear();
+    object.value_map_.clear();
 
     if (!match("{", input)) {
         return false;
@@ -160,7 +160,7 @@ void Value::reset() {
 }
 
 bool Value::parse(std::istream& input, Value& value) {
-	value.reset();
+    value.reset();
 
     std::string string_value;
     if (parse_string(input, &string_value)) {
@@ -208,7 +208,7 @@ Array::~Array() {
 }
 
 bool Array::parse(std::istream& input, Array& array) {
-	array.values_.clear();
+    array.values_.clear();
 
     if (!match("[", input)) {
         return false;
@@ -230,43 +230,43 @@ bool Array::parse(std::istream& input, Array& array) {
 }
 
 static std::ostream& stream_string(std::ostream& stream,
-        const std::string& string) {
+                                   const std::string& string) {
     stream << '"';
     for (std::string::const_iterator i = string.begin(),
-            e = string.end(); i != e; ++i) {
-		switch (*i) {
-		case '"':
-			stream << "\\\"";
-			break;
-		case '\\':
-			stream << "\\\\";
-			break;
-		case '/':
-			stream << "\\/";
-			break;
-		case '\b':
-			stream << "\\b";
-			break;
-		case '\f':
-			stream << "\\f";
-			break;
-		case '\n':
-			stream << "\\n";
-			break;
-		case '\r':
-			stream << "\\r";
-			break;
-		case '\t':
-			stream << "\\t";
-			break;
-		default:
-			if (*i < 32) {
-				stream << "\\u" << std::hex << std::setw(6) <<
-					std::setfill('0') << static_cast<int>(*i) << std::dec <<
-					std::setw(0);
-			} else {
-				stream << *i;
-			}
+                 e = string.end(); i != e; ++i) {
+        switch (*i) {
+            case '"':
+                stream << "\\\"";
+                break;
+            case '\\':
+                stream << "\\\\";
+                break;
+            case '/':
+                stream << "\\/";
+                break;
+            case '\b':
+                stream << "\\b";
+                break;
+            case '\f':
+                stream << "\\f";
+                break;
+            case '\n':
+                stream << "\\n";
+                break;
+            case '\r':
+                stream << "\\r";
+                break;
+            case '\t':
+                stream << "\\t";
+                break;
+            default:
+                if (*i < 32) {
+                    stream << "\\u" << std::hex << std::setw(6) <<
+                            std::setfill('0') << static_cast<int>(*i) << std::dec <<
+                            std::setw(0);
+                } else {
+                    stream << *i;
+                }
         }
     }
     stream << '"';
@@ -276,47 +276,47 @@ static std::ostream& stream_string(std::ostream& stream,
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
-  if (v.is<double>()) {
-    return stream << v.get<double>();
-  } else if (v.is<std::string>()) {
-    return jsonxx::stream_string(stream, v.get<std::string>());
-  } else if (v.is<bool>()) {
-    if (v.get<bool>()) {
-      return stream << "true";
-    } else {
-      return stream << "false";
+    if (v.is<double>()) {
+        return stream << v.get<double>();
+    } else if (v.is<std::string>()) {
+        return jsonxx::stream_string(stream, v.get<std::string>());
+    } else if (v.is<bool>()) {
+        if (v.get<bool>()) {
+            return stream << "true";
+        } else {
+            return stream << "false";
+        }
+    } else if (v.is<jsonxx::Value::Null>()) {
+        return stream << "null";
+    } else if (v.is<jsonxx::Object>()) {
+        return stream << v.get<jsonxx::Object>();
+    } else if (v.is<jsonxx::Array>()){
+        return stream << v.get<jsonxx::Array>();
     }
-  } else if (v.is<jsonxx::Value::Null>()) {
-    return stream << "null";
-  } else if (v.is<jsonxx::Object>()) {
-    return stream << v.get<jsonxx::Object>();
-  } else if (v.is<jsonxx::Array>()){
-    return stream << v.get<jsonxx::Array>();
-  }
-  // Shouldn't reach here.
-  return stream;
+    // Shouldn't reach here.
+    return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v) {
-  stream << "[";
-  const std::vector<jsonxx::Value*>& values(v.values());
-  for (unsigned int i = 0; i < values.size()-1; ++i) {
-    stream << *(values[i]) << ", ";
-  }
-  return stream << *(values[values.size()-1]) << "]";
+    stream << "[";
+    const std::vector<jsonxx::Value*>& values(v.values());
+    for (unsigned int i = 0; i < values.size()-1; ++i) {
+        stream << *(values[i]) << ", ";
+    }
+    return stream << *(values[values.size()-1]) << "]";
 }
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
-  stream << "{";
-  const std::map<std::string, jsonxx::Value*>& kv(v.kv_map());
-  for (std::map<std::string, jsonxx::Value*>::const_iterator i = kv.begin();
-       i != kv.end(); /**/) {
-    jsonxx::stream_string(stream, i->first);
-    stream << ": " << *(i->second);
-    ++i;
-    if ( i != kv.end()) {
-      stream << ", ";
+    stream << "{";
+    const std::map<std::string, jsonxx::Value*>& kv(v.kv_map());
+    for (std::map<std::string, jsonxx::Value*>::const_iterator i = kv.begin();
+         i != kv.end(); /**/) {
+        jsonxx::stream_string(stream, i->first);
+        stream << ": " << *(i->second);
+        ++i;
+        if ( i != kv.end()) {
+            stream << ", ";
+        }
     }
-  }
-  return stream << "}";
+    return stream << "}";
 }
