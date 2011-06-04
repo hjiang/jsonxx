@@ -202,8 +202,9 @@ bool Value::parse(std::istream& input, Value& value) {
 Array::Array() : values_() {}
 
 Array::~Array() {
-    for (unsigned int i = 0; i < values_.size(); ++i) {
-        delete values_[i];
+    for (std::vector<jsonxx::Value*>::iterator i = values_.begin();
+         i != values_.end(); ++i) {
+        delete *i;
     }
 }
 
@@ -300,10 +301,15 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v) {
     stream << "[";
     const std::vector<jsonxx::Value*>& values(v.values());
-    for (unsigned int i = 0; i < values.size()-1; ++i) {
-        stream << *(values[i]) << ", ";
+    for (std::vector<jsonxx::Value*>::const_iterator i = values.begin();
+         i != values.end(); /**/) {
+        stream << *(*i);
+        ++i;
+        if (i != values.end()) {
+            stream << ", ";
+        }
     }
-    return stream << *(values[values.size()-1]) << "]";
+    return stream << "]";
 }
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {

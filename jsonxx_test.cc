@@ -168,4 +168,12 @@ int main() {
         assert(o.has<std::string>("bar"));
         assert(o.get<std::string>("bar") == "a\rb\nc\td");
     }
+    {
+        string teststr("[ ]");
+        istringstream input(teststr);
+        ostringstream output;
+        Array root;
+        Array::parse(input, root);
+        output << root;
+    }
 }
