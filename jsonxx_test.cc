@@ -173,7 +173,7 @@ int main() {
         istringstream input(teststr);
         ostringstream output;
         Array root;
-        Array::parse(input, root);
+        assert(Array::parse(input, root));
         output << root;
     }
 
@@ -181,14 +181,14 @@ int main() {
         string teststr("{}");
         istringstream input(teststr);
         Object o;
-        Object::parse(input, o);
+        assert(Object::parse(input, o));
     }
 
     {
         string teststr("{\"attrs\":{}}");
         istringstream input(teststr);
         Object o;
-        Object::parse(input, o);
+        assert(Object::parse(input, o));
         assert(o.has<Object>("attrs"));
     }
 
@@ -205,7 +205,7 @@ int main() {
                        "\"country\":\"The Netherlands\"}}");
         istringstream input(teststr);
         Object o;
-        Object::parse(input, o);
+        assert(Object::parse(input, o));
         assert(o.has<Object>("place"));
         assert(o.get<Object>("place").has<Object>("attributes"));
     }
