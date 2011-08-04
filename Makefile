@@ -1,4 +1,4 @@
-CXXFLAGS=-Werror -Wall
+CXXFLAGS=-Werror -Wall -g
 
 jsonxx_test: jsonxx_test.cc jsonxx.o
 

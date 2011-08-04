@@ -21,6 +21,10 @@ bool match(const char* pattern, std::istream& input) {
         input.get(ch);
         if (ch != *cur) {
             input.putback(ch);
+            while (cur > pattern) {
+                cur--;
+                input.putback(*cur);
+            }
             return false;
         } else {
             cur++;
@@ -122,6 +126,9 @@ bool Object::parse(std::istream& input, Object& object) {
     if (!match("{", input)) {
         return false;
     }
+    if (match("}", input)) {
+        return true;
+    }
 
     do {
         std::string key;
@@ -139,9 +146,11 @@ bool Object::parse(std::istream& input, Object& object) {
         object.value_map_[key] = v;
     } while (match(",", input));
 
+
     if (!match("}", input)) {
         return false;
     }
+
     return true;
 }
 

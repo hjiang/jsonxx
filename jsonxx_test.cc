@@ -176,4 +176,37 @@ int main() {
         Array::parse(input, root);
         output << root;
     }
+
+    {
+        string teststr("{}");
+        istringstream input(teststr);
+        Object o;
+        Object::parse(input, o);
+    }
+
+    {
+        string teststr("{\"attrs\":{}}");
+        istringstream input(teststr);
+        Object o;
+        Object::parse(input, o);
+        assert(o.has<Object>("attrs"));
+    }
+
+    {
+        string teststr("{\"place\":{\"full_name\":\"Limburg, The Netherlands\""
+                       ",\"attributes\":{},\"name\":\"Limburg\","
+                       "\"place_type\":\"admin\",\"bounding_box\":{"
+                       "\"type\":\"Polygon\",\"coordinates\":"
+                       "[[[5.5661376,50.750449],[6.2268848,50.750449],"
+                       "[6.2268848,51.7784841],[5.5661376,51.7784841]]]},"
+                       "\"url\":\"http:\\/\\/api.twitter.com\\/1\\/geo\\/id\\/"
+                       "4ef0c00cbdff9ac8.json\",\"country_code\":\"NL\","
+                       "\"id\":\"4ef0c00cbdff9ac8\","
+                       "\"country\":\"The Netherlands\"}}");
+        istringstream input(teststr);
+        Object o;
+        Object::parse(input, o);
+        assert(o.has<Object>("place"));
+        assert(o.get<Object>("place").has<Object>("attributes"));
+    }
 }
