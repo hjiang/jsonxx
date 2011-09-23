@@ -11,6 +11,10 @@
 
 namespace jsonxx {
 
+bool match(const char* pattern, std::istream& input);
+bool parse_string(std::istream& input, std::string* value);
+bool parse_number(std::istream& input, number* value);
+
 // Try to consume characters from the input stream and match the
 // pattern string.
 bool match(const char* pattern, std::istream& input) {
@@ -82,7 +86,7 @@ bool parse_string(std::istream& input, std::string* value) {
     }
 }
 
-bool parse_bool(std::istream& input, bool* value) {
+static bool parse_bool(std::istream& input, bool* value) {
     if (match("true", input))  {
         *value = true;
         return true;
@@ -94,14 +98,14 @@ bool parse_bool(std::istream& input, bool* value) {
     return false;
 }
 
-bool parse_null(std::istream& input) {
+static bool parse_null(std::istream& input) {
     if (match("null", input))  {
         return true;
     }
     return false;
 }
 
-bool parse_number(std::istream& input, double* value) {
+bool parse_number(std::istream& input, number* value) {
     input >> std::ws;
     input >> *value;
     if (input.fail()) {
@@ -286,8 +290,8 @@ static std::ostream& stream_string(std::ostream& stream,
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
-    if (v.is<double>()) {
-        return stream << v.get<double>();
+    if (v.is<jsonxx::number>()) {
+        return stream << v.get<jsonxx::number>();
     } else if (v.is<std::string>()) {
         return jsonxx::stream_string(stream, v.get<std::string>());
     } else if (v.is<bool>()) {
