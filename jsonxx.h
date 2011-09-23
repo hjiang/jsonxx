@@ -11,6 +11,8 @@
 
 namespace jsonxx {
 
+typedef double number;
+	
 class Value;
 
 // A JSON Object
@@ -48,7 +50,7 @@ class Array {
 
   static bool parse(std::istream& input, Array& array);
 
-  unsigned int size() const { return values_.size(); }
+  size_t size() const { return values_.size(); }
 
   template <typename T>
   bool has(unsigned int i) const;
@@ -99,7 +101,7 @@ class Value {
     INVALID_
   } type_;
   union {
-    double number_value_;
+    number number_value_;
     std::string* string_value_;
     bool bool_value_;
     Array* array_value_;
@@ -165,7 +167,7 @@ inline bool Value::is<std::string>() const {
 }
 
 template<>
-inline bool Value::is<double>() const {
+inline bool Value::is<number>() const {
   return type_ == NUMBER_;
 }
 
@@ -192,8 +194,8 @@ inline std::string& Value::get<std::string>() {
 }
 
 template<>
-inline double& Value::get<double>() {
-  assert(is<double>());
+inline number& Value::get<number>() {
+  assert(is<number>());
   return number_value_;
 }
 
@@ -222,8 +224,8 @@ inline const std::string& Value::get<std::string>() const {
 }
 
 template<>
-inline const double& Value::get<double>() const {
-  assert(is<double>());
+inline const number& Value::get<number>() const {
+  assert(is<number>());
   return number_value_;
 }
 
