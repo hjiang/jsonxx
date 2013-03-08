@@ -209,4 +209,16 @@ int main() {
         assert(o.has<Object>("place"));
         assert(o.get<Object>("place").has<Object>("attributes"));
     }
+
+    {
+        string teststr(
+                "{"
+                "  \"this_array_has_formatting_issues\": [true, 42, 54.7,],"
+                "  \"this_object_too\" : {\"name\" : \"GWB\", \"age\" : 60,},"
+                "}"
+                       );
+        istringstream input(teststr);
+        Object o;
+        assert(Object::parse(input, o));
+    }
 }

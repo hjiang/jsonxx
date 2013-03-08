@@ -137,6 +137,8 @@ bool Object::parse(std::istream& input, Object& object) {
     do {
         std::string key;
         if (!parse_string(input, &key)) {
+            if (input.peek() == '}')
+                break;
             return false;
         }
         if (!match(":", input)) {
