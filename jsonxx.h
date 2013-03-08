@@ -8,11 +8,15 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <string>
 
 namespace jsonxx {
 
-typedef double number;
-	
+typedef double Number;
+typedef bool Boolean;
+typedef std::string String;
+struct Null {};
+
 class Value;
 
 // A JSON Object
@@ -101,9 +105,9 @@ class Value {
     INVALID_
   } type_;
   union {
-    number number_value_;
-    std::string* string_value_;
-    bool bool_value_;
+    Number number_value_;
+    String* string_value_;
+    Boolean bool_value_;
     Array* array_value_;
     Object* object_value_;
   };
@@ -152,22 +156,22 @@ const T& Object::get(const std::string& key) const {
 }
 
 template<>
-inline bool Value::is<Value::Null>() const {
+inline bool Value::is<Null>() const {
   return type_ == NULL_;
 }
 
 template<>
-inline bool Value::is<bool>() const {
+inline bool Value::is<Boolean>() const {
   return type_ == BOOL_;
 }
 
 template<>
-inline bool Value::is<std::string>() const {
+inline bool Value::is<String>() const {
   return type_ == STRING_;
 }
 
 template<>
-inline bool Value::is<number>() const {
+inline bool Value::is<Number>() const {
   return type_ == NUMBER_;
 }
 
@@ -182,20 +186,20 @@ inline bool Value::is<Object>() const {
 }
 
 template<>
-inline bool& Value::get<bool>() {
-  assert(is<bool>());
+inline bool& Value::get<Boolean>() {
+  assert(is<Boolean>());
   return bool_value_;
 }
 
 template<>
-inline std::string& Value::get<std::string>() {
-  assert(is<std::string>());
+inline std::string& Value::get<String>() {
+  assert(is<String>());
   return *string_value_;
 }
 
 template<>
-inline number& Value::get<number>() {
-  assert(is<number>());
+inline Number& Value::get<Number>() {
+  assert(is<Number>());
   return number_value_;
 }
 
@@ -212,20 +216,20 @@ inline Object& Value::get<Object>() {
 }
 
 template<>
-inline const bool& Value::get<bool>() const {
-  assert(is<bool>());
+inline const Boolean& Value::get<Boolean>() const {
+  assert(is<Boolean>());
   return bool_value_;
 }
 
 template<>
-inline const std::string& Value::get<std::string>() const {
-  assert(is<std::string>());
+inline const String& Value::get<String>() const {
+  assert(is<String>());
   return *string_value_;
 }
 
 template<>
-inline const number& Value::get<number>() const {
-  assert(is<number>());
+inline const Number& Value::get<Number>() const {
+  assert(is<Number>());
   return number_value_;
 }
 

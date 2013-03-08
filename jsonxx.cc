@@ -12,8 +12,8 @@
 namespace jsonxx {
 
 bool match(const char* pattern, std::istream& input);
-bool parse_string(std::istream& input, std::string* value);
-bool parse_number(std::istream& input, number* value);
+bool parse_string(std::istream& input, String* value);
+bool parse_number(std::istream& input, Number* value);
 
 // Try to consume characters from the input stream and match the
 // pattern string.
@@ -37,7 +37,7 @@ bool match(const char* pattern, std::istream& input) {
     return *cur == 0;
 }
 
-bool parse_string(std::istream& input, std::string* value) {
+bool parse_string(std::istream& input, String* value) {
     if (!match("\"", input))  {
         return false;
     }
@@ -86,7 +86,7 @@ bool parse_string(std::istream& input, std::string* value) {
     }
 }
 
-static bool parse_bool(std::istream& input, bool* value) {
+static bool parse_bool(std::istream& input, Boolean* value) {
     if (match("true", input))  {
         *value = true;
         return true;
@@ -105,7 +105,7 @@ static bool parse_null(std::istream& input) {
     return false;
 }
 
-bool parse_number(std::istream& input, number* value) {
+bool parse_number(std::istream& input, Number* value) {
     input >> std::ws;
     input >> *value;
     if (input.fail()) {
@@ -292,17 +292,17 @@ static std::ostream& stream_string(std::ostream& stream,
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
-    if (v.is<jsonxx::number>()) {
-        return stream << v.get<jsonxx::number>();
-    } else if (v.is<std::string>()) {
+    if (v.is<jsonxx::Number>()) {
+        return stream << v.get<jsonxx::Number>();
+    } else if (v.is<jsonxx::String>()) {
         return jsonxx::stream_string(stream, v.get<std::string>());
-    } else if (v.is<bool>()) {
-        if (v.get<bool>()) {
+    } else if (v.is<jsonxx::Boolean>()) {
+        if (v.get<jsonxx::Boolean>()) {
             return stream << "true";
         } else {
             return stream << "false";
         }
-    } else if (v.is<jsonxx::Value::Null>()) {
+    } else if (v.is<jsonxx::Null>()) {
         return stream << "null";
     } else if (v.is<jsonxx::Object>()) {
         return stream << v.get<jsonxx::Object>();

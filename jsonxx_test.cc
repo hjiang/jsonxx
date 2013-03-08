@@ -9,8 +9,8 @@
 #include "jsonxx.h"
 
 namespace jsonxx {
-extern bool parse_string(std::istream& input, std::string* value);
-extern bool parse_number(std::istream& input, number* value);
+extern bool parse_string(std::istream& input, String* value);
+extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
@@ -41,7 +41,7 @@ int main() {
     {
         string teststr("6");
         istringstream input(teststr);
-        number value;
+        Number value;
         assert(parse_number(input, &value));
         assert(value == 6);
     }
@@ -67,24 +67,24 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == 6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == 6);
     }
     {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == 6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == 6);
     }
     {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == -6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == -6);
     }
     {
         string teststr("asdf");
@@ -97,32 +97,32 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<bool>());
-        assert(v.get<bool>());
+        assert(v.is<Boolean>());
+        assert(v.get<Boolean>());
     }
     {
         string teststr("false");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<bool>());
-        assert(!v.get<bool>());
+        assert(v.is<Boolean>());
+        assert(!v.get<Boolean>());
     }
     {
         string teststr("null");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<Value::Null>());
-        assert(!v.is<bool>());
+        assert(v.is<Null>());
+        assert(!v.is<Boolean>());
     }
     {
         string teststr("\"field1\"");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<std::string>());
-        assert("field1" == v.get<std::string>());
+        assert(v.is<String>());
+        assert("field1" == v.get<String>());
         ostringstream stream;
         stream << v;
         assert(stream.str() == "\"field1\"");
@@ -132,11 +132,11 @@ int main() {
         istringstream input(teststr);
         Array a;
         assert(Array::parse(input, a));
-        assert(a.has<std::string>(0));
-        assert("field1" == a.get<std::string>(0));
-        assert(a.has<number>(1));
-        assert(6 == a.get<number>(1));
-        assert(!a.has<bool>(2));
+        assert(a.has<String>(0));
+        assert("field1" == a.get<String>(0));
+        assert(a.has<Number>(1));
+        assert(6 == a.get<Number>(1));
+        assert(!a.has<Boolean>(2));
     }
     {
         string teststr(
@@ -150,23 +150,23 @@ int main() {
         istringstream input(teststr);
         Object o;
         assert(Object::parse(input, o));
-        assert(1 == o.get<number>("foo"));
-        assert(o.has<bool>("bar"));
+        assert(1 == o.get<Number>("foo"));
+        assert(o.has<Boolean>("bar"));
         assert(o.has<Object>("person"));
-        assert(o.get<Object>("person").has<number>("age"));
+        assert(o.get<Object>("person").has<Number>("age"));
         assert(o.has<Array>("data"));
-        assert(o.get<Array>("data").get<number>(1) == 42);
-        assert(o.get<Array>("data").get<string>(0) == "abcd");
-        assert(o.get<Array>("data").get<number>(2) == 54.7);
-        assert(!o.has<number>("data"));
+        assert(o.get<Array>("data").get<Number>(1) == 42);
+        assert(o.get<Array>("data").get<String>(0) == "abcd");
+        assert(o.get<Array>("data").get<Number>(2) == 54.7);
+        assert(!o.has<Number>("data"));
     }
     {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
         istringstream input(teststr);
         Object o;
         assert(Object::parse(input, o));
-        assert(o.has<std::string>("bar"));
-        assert(o.get<std::string>("bar") == "a\rb\nc\td");
+        assert(o.has<String>("bar"));
+        assert(o.get<String>("bar") == "a\rb\nc\td");
     }
     {
         string teststr("[ ]");
