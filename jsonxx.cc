@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 namespace jsonxx {
 
@@ -346,3 +347,123 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
     }
     return stream << "}";
 }
+
+
+namespace jsonxx {
+namespace {
+
+std::string escape( const std::string &input, const std::vector< std::string > &map ) {
+    std::string output;
+    for( const auto &it : input )
+        output += map[ int(it) ];
+    return output;
+}
+
+void base( std::vector< std::string > &map ) {
+    map.resize( 256 );
+    for( int i = 0; i < 256; ++i )
+        map[ i ] = std::string() + char(i);
+}
+
+const std::vector< std::string > &encxml() {
+    static std::vector<std::string> map;
+    if( !map.size() ) {
+        base(map);
+        map[ int('<') ] = "&lt;";
+        map[ int('>') ] = "&gt;";
+    }
+    return map;
+}
+
+const std::vector< std::string > &encstr() {
+    static std::vector<std::string> map;
+    if( !map.size() ) {
+        base(map);
+        map[ int('"') ] = "\\\"";
+        map[ int('\'') ] = "\\\'";
+    }
+    return map;
+}
+
+std::string tagname( const std::string &name ) {
+    return !name.empty() ? std::string(" name=\"") + escape(name, encstr()) + "\"" : std::string();
+}
+
+template<typename T>
+std::string tag( const T &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:null" << tagname(name);
+    ss << " />" << std::endl;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Boolean &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:boolean" << tagname(name) << ">";
+    ss << ( t ? "true" : "false" );
+    ss << "</json:boolean>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Number &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:number" << tagname(name) << ">";
+    ss << t;
+    ss << "</json:number>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::String &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:string" << tagname(name) << ">";
+    ss << escape(t, encxml());
+    ss << "</json:string>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Object &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+	std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:object" << tagname(name) << ">" << std::endl;
+    for( const auto &it : t.kv_map() )
+      ss << it.second->jsonx( it.first, depth+1 );
+    ss << tab << "</json:object>" << std::endl;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Array &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:array" << tagname(name) << ">" << std::endl;
+    for( const auto &it : t.values() )
+      ss << it->jsonx( std::string(), depth+1 );
+    ss << tab << "</json:array>" << std::endl;
+    return ss.str();
+}
+
+} // namespace
+
+std::string Object::jsonx( const std::string &name, unsigned depth ) const {
+    return tag( *this, name, depth );
+}
+
+std::string Array::jsonx( const std::string &name, unsigned depth ) const {
+    return tag( *this, name, depth );
+}
+
+std::string Value::jsonx( const std::string &name, unsigned depth ) const {
+    switch(type_) {
+        case BOOL_:   return tag( bool_value_, name, depth );
+        case ARRAY_:  return tag( *array_value_, name, depth );
+        case NUMBER_: return tag( number_value_, name, depth );
+        case STRING_: return tag( *string_value_, name, depth );
+        case OBJECT_: return tag( *object_value_, name, depth );
+        default:      return tag( jsonxx::Null(), name, depth );
+    }
+}
+
+}  // namespace jsonxx

@@ -3,6 +3,7 @@
 // Author: Hong Jiang <hong@hjiang.net>
 // Contributors:
 //   Sean Middleditch <sean@middleditch.us>
+//   rlyeh <https://github.com/r-lyeh>
 
 #include <cassert>
 #include <iostream>
@@ -38,6 +39,7 @@ class Object {
   const T& get(const std::string& key) const;
 
   const std::map<std::string, Value*>& kv_map() const { return value_map_; }
+  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
  private:
   Object(const Object&);
   Object& operator=(const Object&);
@@ -68,6 +70,7 @@ class Array {
     return values_;
   }
 
+  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
  private:
   Array(const Array&);
   Array& operator=(const Array&);
@@ -92,6 +95,7 @@ class Value {
   T& get();
   template<typename T>
   const T& get() const;
+  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
  private:
   Value(const Value&);
   Value& operator=(const Value&);
