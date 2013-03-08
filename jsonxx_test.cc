@@ -25,6 +25,13 @@ int main() {
         assert(value == "field1");
     }
     {
+        string teststr("'field1'");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "field1");
+    }
+    {
         string teststr("\"  field1\"");
         string value;
         istringstream input(teststr);
@@ -32,7 +39,21 @@ int main() {
         assert(value == "  field1");
     }
     {
+        string teststr("'  field1'");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "  field1");
+    }
+    {
         string teststr("  \"field1\"");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "field1");
+    }
+    {
+        string teststr("  'field1'");
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
@@ -128,6 +149,17 @@ int main() {
         assert(stream.str() == "\"field1\"");
     }
     {
+        string teststr("'field1'");
+        istringstream input(teststr);
+        Value v;
+        assert(Value::parse(input, v));
+        assert(v.is<String>());
+        assert("field1" == v.get<String>());
+        ostringstream stream;
+        stream << v;
+        assert(stream.str() == "\"field1\"");
+    }
+    {
         string teststr("[\"field1\", 6]");
         istringstream input(teststr);
         Array a;
@@ -213,8 +245,8 @@ int main() {
     {
         string teststr(
                 "{"
-                "  \"this_array_has_formatting_issues\": [true, 42, 54.7,],"
-                "  \"this_object_too\" : {\"name\" : \"GWB\", \"age\" : 60,},"
+                "  'this_array_has_formatting_issues': [true, 42, 54.7,],"
+                "  'this_object_too' : {'name' : \"GWB\", \"age\" : 60,},"
                 "}"
                        );
         istringstream input(teststr);

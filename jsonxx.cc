@@ -38,19 +38,22 @@ bool match(const char* pattern, std::istream& input) {
 }
 
 bool parse_string(std::istream& input, String* value) {
+    char ch, delimiter = '"';
     if (!match("\"", input))  {
-        return false;
+        delimiter = '\'';
+        if (input.peek() != delimiter) {
+            return false;
+        }
+        input.get(ch);
     }
-    char ch;
     while(!input.eof() && input.good()) {
         input.get(ch);
-        if (ch == '"') {
+        if (ch == delimiter) {
             break;
         }
         if (ch == '\\') {
             input.get(ch);
             switch(ch) {
-                case '"':
                 case '\\':
                 case '/':
                     value->push_back(ch);
@@ -71,15 +74,17 @@ bool parse_string(std::istream& input, String* value) {
                     value->push_back('\t');
                     break;
                 default:
-                    value->push_back('\\');
-                    value->push_back(ch);
+                    if (ch != delimiter) {
+                        value->push_back('\\');
+                        value->push_back(ch);
+                    } else value->push_back(ch);
                     break;
             }
         } else {
             value->push_back(ch);
         }
     }
-    if (input && ch == '"') {
+    if (input && ch == delimiter) {
         return true;
     } else {
         return false;
