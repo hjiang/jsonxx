@@ -9,8 +9,8 @@
 #include "jsonxx.h"
 
 namespace jsonxx {
-extern bool parse_string(std::istream& input, std::string* value);
-extern bool parse_number(std::istream& input, number* value);
+extern bool parse_string(std::istream& input, String* value);
+extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
@@ -25,7 +25,21 @@ int main() {
         assert(value == "field1");
     }
     {
+        string teststr("'field1'");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "field1");
+    }
+    {
         string teststr("\"  field1\"");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "  field1");
+    }
+    {
+        string teststr("'  field1'");
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
@@ -39,9 +53,16 @@ int main() {
         assert(value == "field1");
     }
     {
+        string teststr("  'field1'");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert(value == "field1");
+    }
+    {
         string teststr("6");
         istringstream input(teststr);
-        number value;
+        Number value;
         assert(parse_number(input, &value));
         assert(value == 6);
     }
@@ -67,24 +88,24 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == 6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == 6);
     }
     {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == 6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == 6);
     }
     {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<number>());
-        assert(v.get<number>() == -6);
+        assert(v.is<Number>());
+        assert(v.get<Number>() == -6);
     }
     {
         string teststr("asdf");
@@ -97,32 +118,43 @@ int main() {
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<bool>());
-        assert(v.get<bool>());
+        assert(v.is<Boolean>());
+        assert(v.get<Boolean>());
     }
     {
         string teststr("false");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<bool>());
-        assert(!v.get<bool>());
+        assert(v.is<Boolean>());
+        assert(!v.get<Boolean>());
     }
     {
         string teststr("null");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<Value::Null>());
-        assert(!v.is<bool>());
+        assert(v.is<Null>());
+        assert(!v.is<Boolean>());
     }
     {
         string teststr("\"field1\"");
         istringstream input(teststr);
         Value v;
         assert(Value::parse(input, v));
-        assert(v.is<std::string>());
-        assert("field1" == v.get<std::string>());
+        assert(v.is<String>());
+        assert("field1" == v.get<String>());
+        ostringstream stream;
+        stream << v;
+        assert(stream.str() == "\"field1\"");
+    }
+    {
+        string teststr("'field1'");
+        istringstream input(teststr);
+        Value v;
+        assert(Value::parse(input, v));
+        assert(v.is<String>());
+        assert("field1" == v.get<String>());
         ostringstream stream;
         stream << v;
         assert(stream.str() == "\"field1\"");
@@ -132,11 +164,11 @@ int main() {
         istringstream input(teststr);
         Array a;
         assert(Array::parse(input, a));
-        assert(a.has<std::string>(0));
-        assert("field1" == a.get<std::string>(0));
-        assert(a.has<number>(1));
-        assert(6 == a.get<number>(1));
-        assert(!a.has<bool>(2));
+        assert(a.has<String>(0));
+        assert("field1" == a.get<String>(0));
+        assert(a.has<Number>(1));
+        assert(6 == a.get<Number>(1));
+        assert(!a.has<Boolean>(2));
     }
     {
         string teststr(
@@ -150,23 +182,23 @@ int main() {
         istringstream input(teststr);
         Object o;
         assert(Object::parse(input, o));
-        assert(1 == o.get<number>("foo"));
-        assert(o.has<bool>("bar"));
+        assert(1 == o.get<Number>("foo"));
+        assert(o.has<Boolean>("bar"));
         assert(o.has<Object>("person"));
-        assert(o.get<Object>("person").has<number>("age"));
+        assert(o.get<Object>("person").has<Number>("age"));
         assert(o.has<Array>("data"));
-        assert(o.get<Array>("data").get<number>(1) == 42);
-        assert(o.get<Array>("data").get<string>(0) == "abcd");
-        assert(o.get<Array>("data").get<number>(2) == 54.7);
-        assert(!o.has<number>("data"));
+        assert(o.get<Array>("data").get<Number>(1) == 42);
+        assert(o.get<Array>("data").get<String>(0) == "abcd");
+        assert(o.get<Array>("data").get<Number>(2) == 54.7);
+        assert(!o.has<Number>("data"));
     }
     {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
         istringstream input(teststr);
         Object o;
         assert(Object::parse(input, o));
-        assert(o.has<std::string>("bar"));
-        assert(o.get<std::string>("bar") == "a\rb\nc\td");
+        assert(o.has<String>("bar"));
+        assert(o.get<String>("bar") == "a\rb\nc\td");
     }
     {
         string teststr("[ ]");
@@ -209,4 +241,73 @@ int main() {
         assert(o.has<Object>("place"));
         assert(o.get<Object>("place").has<Object>("attributes"));
     }
+
+    {
+        string teststr(
+                "{"
+                "  'this_array_has_formatting_issues': [true, 42, 54.7,],"
+                "  'this_object_too' : {'name' : \"GWB\", \"age\" : 60,},"
+                "}"
+                       );
+        istringstream input(teststr);
+        Object o;
+        assert(Object::parse(input, o));
+    }
+    {
+        #define QUOTE(...) #__VA_ARGS__
+        string input = QUOTE(
+        {
+          "name":"John Smith",
+          'alias': 'Joe',
+          "address": {
+            "streetAddress": "21 2nd Street",
+            "city": "New York",
+            "state": "NY",
+            "postalCode": 10021,
+          },
+          "phoneNumbers": [
+            "212 555-1111",
+            "212 555-2222",
+          ],
+          "additionalInfo": null,
+          "remote": false,
+          "height": 62.4,
+          "ficoScore": " > 640",
+        }
+        );
+
+        string sample_output = QUOTE(
+        <?xml version="1.0" encoding="UTF-8"?>
+        <json:object xsi:schemaLocation="http://www.datapower.com/schemas/json jsonx.xsd"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:json="http://www.ibm.com/xmlns/prod/2009/jsonx">
+          <json:string name="name">John Smith</json:string>
+          <json:string name="alias">Joe</json:string>
+          <json:object name="address">
+            <json:string name="streetAddress">21 2nd Street</json:string>
+            <json:string name="city">New York</json:string>
+            <json:string name="state">NY</json:string>
+            <json:number name="postalCode">10021</json:number>
+          </json:object>
+          <json:array name="phoneNumbers">
+            <json:string>212 555-1111</json:string>
+            <json:string>212 555-2222</json:string>
+          </json:array>
+          <json:null name="additionalInfo" />
+          <json:boolean name="remote">false</json:boolean>
+          <json:number name="height">62.4</json:number>
+          <json:string name="ficoScore">&gt; 640</json:string>
+        </json:object>
+        );
+
+        Object o;
+        if( Object::parse( istringstream( input ), o ) ) {
+            // jsonx header
+            cout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+            // jsonx body
+            cout << o.jsonx() << endl;
+        }
+    }
+
+    cout << "All tests ok." << endl;
 }

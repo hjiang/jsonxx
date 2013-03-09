@@ -8,12 +8,13 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 namespace jsonxx {
 
 bool match(const char* pattern, std::istream& input);
-bool parse_string(std::istream& input, std::string* value);
-bool parse_number(std::istream& input, number* value);
+bool parse_string(std::istream& input, String* value);
+bool parse_number(std::istream& input, Number* value);
 
 // Try to consume characters from the input stream and match the
 // pattern string.
@@ -37,20 +38,23 @@ bool match(const char* pattern, std::istream& input) {
     return *cur == 0;
 }
 
-bool parse_string(std::istream& input, std::string* value) {
+bool parse_string(std::istream& input, String* value) {
+    char ch, delimiter = '"';
     if (!match("\"", input))  {
-        return false;
+        delimiter = '\'';
+        if (input.peek() != delimiter) {
+            return false;
+        }
+        input.get(ch);
     }
-    char ch;
     while(!input.eof() && input.good()) {
         input.get(ch);
-        if (ch == '"') {
+        if (ch == delimiter) {
             break;
         }
         if (ch == '\\') {
             input.get(ch);
             switch(ch) {
-                case '"':
                 case '\\':
                 case '/':
                     value->push_back(ch);
@@ -71,22 +75,24 @@ bool parse_string(std::istream& input, std::string* value) {
                     value->push_back('\t');
                     break;
                 default:
-                    value->push_back('\\');
-                    value->push_back(ch);
+                    if (ch != delimiter) {
+                        value->push_back('\\');
+                        value->push_back(ch);
+                    } else value->push_back(ch);
                     break;
             }
         } else {
             value->push_back(ch);
         }
     }
-    if (input && ch == '"') {
+    if (input && ch == delimiter) {
         return true;
     } else {
         return false;
     }
 }
 
-static bool parse_bool(std::istream& input, bool* value) {
+static bool parse_bool(std::istream& input, Boolean* value) {
     if (match("true", input))  {
         *value = true;
         return true;
@@ -105,7 +111,7 @@ static bool parse_null(std::istream& input) {
     return false;
 }
 
-bool parse_number(std::istream& input, number* value) {
+bool parse_number(std::istream& input, Number* value) {
     input >> std::ws;
     input >> *value;
     if (input.fail()) {
@@ -137,6 +143,8 @@ bool Object::parse(std::istream& input, Object& object) {
     do {
         std::string key;
         if (!parse_string(input, &key)) {
+            if (input.peek() == '}')
+                break;
             return false;
         }
         if (!match(":", input)) {
@@ -290,17 +298,17 @@ static std::ostream& stream_string(std::ostream& stream,
 }  // namespace jsonxx
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v) {
-    if (v.is<jsonxx::number>()) {
-        return stream << v.get<jsonxx::number>();
-    } else if (v.is<std::string>()) {
+    if (v.is<jsonxx::Number>()) {
+        return stream << v.get<jsonxx::Number>();
+    } else if (v.is<jsonxx::String>()) {
         return jsonxx::stream_string(stream, v.get<std::string>());
-    } else if (v.is<bool>()) {
-        if (v.get<bool>()) {
+    } else if (v.is<jsonxx::Boolean>()) {
+        if (v.get<jsonxx::Boolean>()) {
             return stream << "true";
         } else {
             return stream << "false";
         }
-    } else if (v.is<jsonxx::Value::Null>()) {
+    } else if (v.is<jsonxx::Null>()) {
         return stream << "null";
     } else if (v.is<jsonxx::Object>()) {
         return stream << v.get<jsonxx::Object>();
@@ -339,3 +347,123 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
     }
     return stream << "}";
 }
+
+
+namespace jsonxx {
+namespace {
+
+std::string escape( const std::string &input, const std::vector< std::string > &map ) {
+    std::string output;
+    for( const auto &it : input )
+        output += map[ int(it) ];
+    return output;
+}
+
+void base( std::vector< std::string > &map ) {
+    map.resize( 256 );
+    for( int i = 0; i < 256; ++i )
+        map[ i ] = std::string() + char(i);
+}
+
+const std::vector< std::string > &encxml() {
+    static std::vector<std::string> map;
+    if( !map.size() ) {
+        base(map);
+        map[ int('<') ] = "&lt;";
+        map[ int('>') ] = "&gt;";
+    }
+    return map;
+}
+
+const std::vector< std::string > &encstr() {
+    static std::vector<std::string> map;
+    if( !map.size() ) {
+        base(map);
+        map[ int('"') ] = "\\\"";
+        map[ int('\'') ] = "\\\'";
+    }
+    return map;
+}
+
+std::string tagname( const std::string &name ) {
+    return !name.empty() ? std::string(" name=\"") + escape(name, encstr()) + "\"" : std::string();
+}
+
+template<typename T>
+std::string tag( const T &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:null" << tagname(name);
+    ss << " />" << std::endl;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Boolean &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:boolean" << tagname(name) << ">";
+    ss << ( t ? "true" : "false" );
+    ss << "</json:boolean>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Number &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:number" << tagname(name) << ">";
+    ss << t;
+    ss << "</json:number>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::String &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:string" << tagname(name) << ">";
+    ss << escape(t, encxml());
+    ss << "</json:string>" << std::endl;;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Object &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+	std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:object" << tagname(name) << ">" << std::endl;
+    for( const auto &it : t.kv_map() )
+      ss << it.second->jsonx( it.first, depth+1 );
+    ss << tab << "</json:object>" << std::endl;
+    return ss.str();
+}
+
+std::string tag( const jsonxx::Array &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+    std::stringstream ss;
+    std::string tab(depth, '\t');
+    ss << tab << "<json:array" << tagname(name) << ">" << std::endl;
+    for( const auto &it : t.values() )
+      ss << it->jsonx( std::string(), depth+1 );
+    ss << tab << "</json:array>" << std::endl;
+    return ss.str();
+}
+
+} // namespace
+
+std::string Object::jsonx( const std::string &name, unsigned depth ) const {
+    return tag( *this, name, depth );
+}
+
+std::string Array::jsonx( const std::string &name, unsigned depth ) const {
+    return tag( *this, name, depth );
+}
+
+std::string Value::jsonx( const std::string &name, unsigned depth ) const {
+    switch(type_) {
+        case BOOL_:   return tag( bool_value_, name, depth );
+        case ARRAY_:  return tag( *array_value_, name, depth );
+        case NUMBER_: return tag( number_value_, name, depth );
+        case STRING_: return tag( *string_value_, name, depth );
+        case OBJECT_: return tag( *object_value_, name, depth );
+        default:      return tag( jsonxx::Null(), name, depth );
+    }
+}
+
+}  // namespace jsonxx
