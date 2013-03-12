@@ -41,7 +41,7 @@ bool match(const char* pattern, std::istream& input) {
 bool parse_string(std::istream& input, String* value) {
     char ch, delimiter = '"';
     if (!match("\"", input))  {
-        if (settings::STRICT) {
+        if (settings::strict) {
             return false;
         }
         delimiter = '\'';
@@ -111,7 +111,7 @@ static bool parse_null(std::istream& input) {
     if (match("null", input))  {
         return true;
     }
-    if (settings::STRICT) {
+    if (settings::strict) {
         return false;
     }
     return (input.peek()==',');
@@ -149,7 +149,7 @@ bool Object::parse(std::istream& input, Object& object) {
     do {
         std::string key;
         if (!parse_string(input, &key)) {
-            if (!settings::STRICT) {
+            if (!settings::strict) {
                 if (input.peek() == '}')
                     break;
             }

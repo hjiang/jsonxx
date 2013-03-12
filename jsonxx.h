@@ -14,7 +14,7 @@
 namespace jsonxx {
 
 enum settings {
-  STRICT = false    // true = strict parsing, false = permissive parsing
+  strict = false    // true = strict parsing, false = permissive parsing
 };
 
 typedef double Number;
