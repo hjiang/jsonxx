@@ -41,6 +41,9 @@ bool match(const char* pattern, std::istream& input) {
 bool parse_string(std::istream& input, String* value) {
     char ch, delimiter = '"';
     if (!match("\"", input))  {
+        if (settings::STRICT) {
+            return false;
+        }
         delimiter = '\'';
         if (input.peek() != delimiter) {
             return false;
@@ -108,7 +111,10 @@ static bool parse_null(std::istream& input) {
     if (match("null", input))  {
         return true;
     }
-    return false;
+    if (settings::STRICT) {
+        return false;
+    }
+    return (input.peek()==',');
 }
 
 bool parse_number(std::istream& input, Number* value) {
@@ -143,8 +149,10 @@ bool Object::parse(std::istream& input, Object& object) {
     do {
         std::string key;
         if (!parse_string(input, &key)) {
-            if (input.peek() == '}')
-                break;
+            if (!settings::STRICT) {
+                if (input.peek() == '}')
+                    break;
+            }
             return false;
         }
         if (!match(":", input)) {
@@ -352,10 +360,12 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
 namespace jsonxx {
 namespace {
 
+typedef unsigned char byte;
+
 std::string escape( const std::string &input, const std::vector< std::string > &map ) {
     std::string output;
     for( const auto &it : input )
-        output += map[ int(it) ];
+        output += map[ byte(it) ];
     return output;
 }
 
@@ -369,8 +379,8 @@ const std::vector< std::string > &encxml() {
     static std::vector<std::string> map;
     if( !map.size() ) {
         base(map);
-        map[ int('<') ] = "&lt;";
-        map[ int('>') ] = "&gt;";
+        map[ byte('<') ] = "&lt;";
+        map[ byte('>') ] = "&gt;";
     }
     return map;
 }
@@ -379,8 +389,8 @@ const std::vector< std::string > &encstr() {
     static std::vector<std::string> map;
     if( !map.size() ) {
         base(map);
-        map[ int('"') ] = "\\\"";
-        map[ int('\'') ] = "\\\'";
+        map[ byte('"') ] = "\\\"";
+        map[ byte('\'') ] = "\\\'";
     }
     return map;
 }
@@ -389,8 +399,14 @@ std::string tagname( const std::string &name ) {
     return !name.empty() ? std::string(" name=\"") + escape(name, encstr()) + "\"" : std::string();
 }
 
-template<typename T>
-std::string tag( const T &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::Boolean &t, unsigned depth, const std::string &name);
+std::string tag( const jsonxx::Number &t,  unsigned depth, const std::string &name);
+std::string tag( const jsonxx::String &t,  unsigned depth, const std::string &name);
+std::string tag( const jsonxx::Value &t,   unsigned depth, const std::string &name);
+std::string tag( const jsonxx::Array &t,   unsigned depth, const std::string &name, const std::string &attr = std::string() );
+std::string tag( const jsonxx::Object &t,  unsigned depth, const std::string &name, const std::string &attr = std::string() );
+
+std::string tag( const jsonxx::Null &t, unsigned depth, const std::string &name) {
     std::stringstream ss;
     std::string tab(depth, '\t');
     ss << tab << "<json:null" << tagname(name);
@@ -398,7 +414,7 @@ std::string tag( const T &t, const std::string &name = std::string(), unsigned d
     return ss.str();
 }
 
-std::string tag( const jsonxx::Boolean &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::Boolean &t, unsigned depth, const std::string &name) {
     std::stringstream ss;
     std::string tab(depth, '\t');
     ss << tab << "<json:boolean" << tagname(name) << ">";
@@ -407,7 +423,7 @@ std::string tag( const jsonxx::Boolean &t, const std::string &name = std::string
     return ss.str();
 }
 
-std::string tag( const jsonxx::Number &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::Number &t, unsigned depth, const std::string &name) {
     std::stringstream ss;
     std::string tab(depth, '\t');
     ss << tab << "<json:number" << tagname(name) << ">";
@@ -416,7 +432,7 @@ std::string tag( const jsonxx::Number &t, const std::string &name = std::string(
     return ss.str();
 }
 
-std::string tag( const jsonxx::String &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::String &t, unsigned depth, const std::string &name) {
     std::stringstream ss;
     std::string tab(depth, '\t');
     ss << tab << "<json:string" << tagname(name) << ">";
@@ -425,45 +441,54 @@ std::string tag( const jsonxx::String &t, const std::string &name = std::string(
     return ss.str();
 }
 
-std::string tag( const jsonxx::Object &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::Object &t, unsigned depth, const std::string &name, const std::string &attr ) {
 	std::stringstream ss;
     std::string tab(depth, '\t');
-    ss << tab << "<json:object" << tagname(name) << ">" << std::endl;
+    ss << tab << "<json:object" << tagname(name) << attr << ">" << std::endl;
     for( const auto &it : t.kv_map() )
-      ss << it.second->jsonx( it.first, depth+1 );
+      ss << tag( *it.second, depth+1, it.first );
     ss << tab << "</json:object>" << std::endl;
     return ss.str();
 }
 
-std::string tag( const jsonxx::Array &t, const std::string &name = std::string(), unsigned depth = 0 ) {
+std::string tag( const jsonxx::Array &t, unsigned depth, const std::string &name, const std::string &attr ) {
     std::stringstream ss;
     std::string tab(depth, '\t');
-    ss << tab << "<json:array" << tagname(name) << ">" << std::endl;
+    ss << tab << "<json:array" << tagname(name) << attr << ">" << std::endl;
     for( const auto &it : t.values() )
-      ss << it->jsonx( std::string(), depth+1 );
+      ss << tag( *it, depth+1, std::string() );
     ss << tab << "</json:array>" << std::endl;
     return ss.str();
 }
 
+std::string tag( const jsonxx::Value &t, unsigned depth, const std::string &name ) {
+    switch(t.type_) {
+        case jsonxx::Value::BOOL_:   return tag( t.bool_value_, depth, name );
+        case jsonxx::Value::ARRAY_:  return tag( *t.array_value_, depth, name );
+        case jsonxx::Value::NUMBER_: return tag( t.number_value_, depth, name );
+        case jsonxx::Value::STRING_: return tag( *t.string_value_, depth, name );
+        case jsonxx::Value::OBJECT_: return tag( *t.object_value_, depth, name );
+        default:                     return tag( jsonxx::Null(), depth, name );
+    }
+}
+
+const char *defheader =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+const char *defattrib =
+    " xsi:schemaLocation=\"http://www.datapower.com/schemas/json jsonx.xsd\""
+    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+    " xmlns:json=\"http://www.ibm.com/xmlns/prod/2009/jsonx\"";
+
 } // namespace
 
-std::string Object::jsonx( const std::string &name, unsigned depth ) const {
-    return tag( *this, name, depth );
+std::string Object::jsonx( const std::string &header, const std::string &attrib ) const {
+    return ( header.empty() ? std::string(defheader) : header ) +
+        tag( *this, 0, std::string(), attrib.empty() ? std::string(defattrib) : attrib );
 }
 
-std::string Array::jsonx( const std::string &name, unsigned depth ) const {
-    return tag( *this, name, depth );
-}
-
-std::string Value::jsonx( const std::string &name, unsigned depth ) const {
-    switch(type_) {
-        case BOOL_:   return tag( bool_value_, name, depth );
-        case ARRAY_:  return tag( *array_value_, name, depth );
-        case NUMBER_: return tag( number_value_, name, depth );
-        case STRING_: return tag( *string_value_, name, depth );
-        case OBJECT_: return tag( *object_value_, name, depth );
-        default:      return tag( jsonxx::Null(), name, depth );
-    }
+std::string Array::jsonx( const std::string &header, const std::string &attrib ) const {
+    return ( header.empty() ? std::string(defheader) : header ) +
+        tag( *this, 0, std::string(), attrib.empty() ? std::string(defattrib) : attrib );
 }
 
 }  // namespace jsonxx
