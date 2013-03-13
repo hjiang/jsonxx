@@ -302,9 +302,6 @@ int main() {
 
         Object o;
         if( Object::parse( istringstream( input ), o ) ) {
-            // jsonx header
-            cout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-            // jsonx body
             cout << o.jsonx() << endl;
         }
     }

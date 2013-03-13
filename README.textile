@@ -21,6 +21,7 @@ for JSON++ were:
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
 * JSONx support: JSON to XML transform. See http://goo.gl/I3cxs for details.
+* Option for strict parsing (default is permissive). See jsonxx::settings enum.
 
 h1. Usage
 
@@ -47,7 +48,6 @@ assert(o.has<Array>("data"));
 assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
 assert(!o.has<Number>("data"));
-cout << "<?xml version=\"1.0\"?>" << endl; // jsonx header
-cout << o.jsonx() << endl;                 // jsonx body
+cout << o.jsonx() << endl;                 // jsonx (XML transformation)
 </code>
 </pre>

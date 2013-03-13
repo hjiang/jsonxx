@@ -13,6 +13,10 @@
 
 namespace jsonxx {
 
+enum settings {
+  strict = false    // true = strict parsing, false = permissive parsing
+};
+
 typedef double Number;
 typedef bool Boolean;
 typedef std::string String;
@@ -39,7 +43,7 @@ class Object {
   const T& get(const std::string& key) const;
 
   const std::map<std::string, Value*>& kv_map() const { return value_map_; }
-  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
+  std::string jsonx( const std::string &header = std::string(), const std::string &attrib = std::string() ) const;
  private:
   Object(const Object&);
   Object& operator=(const Object&);
@@ -69,8 +73,7 @@ class Array {
   const std::vector<Value*>& values() const {
     return values_;
   }
-
-  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
+  std::string jsonx( const std::string &header = std::string(), const std::string &attrib = std::string() ) const;
  private:
   Array(const Array&);
   Array& operator=(const Array&);
@@ -95,10 +98,10 @@ class Value {
   T& get();
   template<typename T>
   const T& get() const;
-  std::string jsonx( const std::string &name = std::string(), unsigned depth = 0 ) const;
  private:
   Value(const Value&);
   Value& operator=(const Value&);
+ public:
   enum {
     NUMBER_,
     STRING_,
