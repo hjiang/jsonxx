@@ -6,8 +6,8 @@
 
 #include <cctype>
 #include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 #include <vector>
 
 namespace jsonxx {
@@ -362,133 +362,175 @@ namespace {
 
 typedef unsigned char byte;
 
-std::string escape( const std::string &input, const std::vector< std::string > &map ) {
+std::string escape_string( const std::string &input ) {
+    static std::string map[256], *once = 0;
+    if( !once ) {
+        for( int i = 0; i < 256; ++i )
+            map[ i ] = std::string() + char(i);
+        map[ byte('"') ] = "\\\"";
+        map[ byte('\'') ] = "\\\'";
+        once = map;
+    }
     std::string output;
     for( const auto &it : input )
         output += map[ byte(it) ];
     return output;
 }
 
-void base( std::vector< std::string > &map ) {
-    map.resize( 256 );
-    for( int i = 0; i < 256; ++i )
-        map[ i ] = std::string() + char(i);
-}
-
-const std::vector< std::string > &encxml() {
-    static std::vector<std::string> map;
-    if( !map.size() ) {
-        base(map);
+std::string escape_tag( const std::string &input ) {
+    static std::string map[256], *once = 0;
+    if( !once ) {
+        for( int i = 0; i < 256; ++i )
+            map[ i ] = std::string() + char(i);
         map[ byte('<') ] = "&lt;";
         map[ byte('>') ] = "&gt;";
+        once = map;
     }
-    return map;
+    std::string output;
+    for( const auto &it : input )
+        output += map[ byte(it) ];
+    return output;
 }
 
-const std::vector< std::string > &encstr() {
-    static std::vector<std::string> map;
-    if( !map.size() ) {
-        base(map);
-        map[ byte('"') ] = "\\\"";
-        map[ byte('\'') ] = "\\\'";
+std::string open_tag( unsigned format, char type, const std::string &name, const std::string &attr = std::string() ) {
+    std::string tagname;
+    switch( format )
+    {
+        default:
+            return std::string();
+
+        case jsonxx::format::jxml:
+            if( name.empty() )
+                tagname = std::string("j son=\"") + type + '\"';
+            else
+                tagname = std::string("j son=\"") + type + ':' + escape_string(name) + '\"';
+            break;
+
+        case jsonxx::format::jsonx:
+            if( !name.empty() )
+                tagname = std::string(" name=\"") + escape_string(name) + "\"";
+            switch( type ) {
+                default:
+                case '0': tagname = "json:null" + tagname; break;
+                case 'b': tagname = "json:boolean" + tagname; break;
+                case 'a': tagname = "json:array" + tagname; break;
+                case 's': tagname = "json:string" + tagname; break;
+                case 'o': tagname = "json:object" + tagname; break;
+                case 'n': tagname = "json:number" + tagname; break;
+            }
+            break;
     }
-    return map;
+
+    return std::string("<") + tagname + attr + ">";
 }
 
-std::string tagname( const std::string &name ) {
-    return !name.empty() ? std::string(" name=\"") + escape(name, encstr()) + "\"" : std::string();
-}
+std::string close_tag( unsigned format, char type ) {
+    switch( format )
+    {
+        default:
+            return std::string();
 
-std::string tag( const jsonxx::Boolean &t, unsigned depth, const std::string &name);
-std::string tag( const jsonxx::Number &t,  unsigned depth, const std::string &name);
-std::string tag( const jsonxx::String &t,  unsigned depth, const std::string &name);
-std::string tag( const jsonxx::Value &t,   unsigned depth, const std::string &name);
-std::string tag( const jsonxx::Array &t,   unsigned depth, const std::string &name, const std::string &attr = std::string() );
-std::string tag( const jsonxx::Object &t,  unsigned depth, const std::string &name, const std::string &attr = std::string() );
+        case jsonxx::format::jxml:
+            return "</j>";
 
-std::string tag( const jsonxx::Null &t, unsigned depth, const std::string &name) {
-    std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:null" << tagname(name);
-    ss << " />" << std::endl;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::Boolean &t, unsigned depth, const std::string &name) {
-    std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:boolean" << tagname(name) << ">";
-    ss << ( t ? "true" : "false" );
-    ss << "</json:boolean>" << std::endl;;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::Number &t, unsigned depth, const std::string &name) {
-    std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:number" << tagname(name) << ">";
-    ss << t;
-    ss << "</json:number>" << std::endl;;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::String &t, unsigned depth, const std::string &name) {
-    std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:string" << tagname(name) << ">";
-    ss << escape(t, encxml());
-    ss << "</json:string>" << std::endl;;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::Object &t, unsigned depth, const std::string &name, const std::string &attr ) {
-	std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:object" << tagname(name) << attr << ">" << std::endl;
-    for( const auto &it : t.kv_map() )
-      ss << tag( *it.second, depth+1, it.first );
-    ss << tab << "</json:object>" << std::endl;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::Array &t, unsigned depth, const std::string &name, const std::string &attr ) {
-    std::stringstream ss;
-    std::string tab(depth, '\t');
-    ss << tab << "<json:array" << tagname(name) << attr << ">" << std::endl;
-    for( const auto &it : t.values() )
-      ss << tag( *it, depth+1, std::string() );
-    ss << tab << "</json:array>" << std::endl;
-    return ss.str();
-}
-
-std::string tag( const jsonxx::Value &t, unsigned depth, const std::string &name ) {
-    switch(t.type_) {
-        case jsonxx::Value::BOOL_:   return tag( t.bool_value_, depth, name );
-        case jsonxx::Value::ARRAY_:  return tag( *t.array_value_, depth, name );
-        case jsonxx::Value::NUMBER_: return tag( t.number_value_, depth, name );
-        case jsonxx::Value::STRING_: return tag( *t.string_value_, depth, name );
-        case jsonxx::Value::OBJECT_: return tag( *t.object_value_, depth, name );
-        default:                     return tag( jsonxx::Null(), depth, name );
+        case jsonxx::format::jsonx:
+            switch( type ) {
+                default:
+                case '0': return "</json:null>";
+                case 'b': return "</json:boolean>";
+                case 'a': return "</json:array>";
+                case 'o': return "</json:object>";
+                case 's': return "</json:string>";
+                case 'n': return "</json:number>";
+            }
     }
 }
 
-const char *defheader =
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-const char *defattrib =
+std::string tag( unsigned format, unsigned depth, const std::string &name, const jsonxx::Value &t, const std::string &attr = std::string() ) {
+    std::stringstream ss;
+    const std::string tab(depth, '\t');
+
+    switch( t.type_ )
+    {
+        default:
+        case jsonxx::Value::NULL_:
+            return tab + open_tag( format, '0', name, " /" ) + '\n';
+
+        case jsonxx::Value::BOOL_:
+            ss << ( t.bool_value_ ? "true" : "false" );
+            return tab + open_tag( format, 'b', name )
+                       + ss.str()
+                       + close_tag( format, 'b' ) + '\n';
+
+        case jsonxx::Value::ARRAY_:
+            for( const auto &it : t.array_value_->values() )
+              ss << tag( format, depth+1, std::string(), *it );
+            return tab + open_tag( format, 'a', name, attr ) + '\n'
+                       + ss.str()
+                 + tab + close_tag( format, 'a' ) + '\n';
+
+        case jsonxx::Value::STRING_:
+            ss << escape_tag( *t.string_value_ );
+            return tab + open_tag( format, 's', name )
+                       + ss.str()
+                       + close_tag( format, 's' ) + '\n';
+
+        case jsonxx::Value::OBJECT_:
+            for( const auto &it : t.object_value_->kv_map() )
+              ss << tag( format, depth+1, it.first, *it.second );
+            return tab + open_tag( format, 'o', name, attr ) + '\n'
+                       + ss.str()
+                 + tab + close_tag( format, 'o' ) + '\n';
+
+        case jsonxx::Value::NUMBER_:
+            ss << t.number_value_;
+            return tab + open_tag( format, 'n', name )
+                       + ss.str()
+                       + close_tag( format, 'n' ) + '\n';
+    }
+}
+
+const char *defheader[2] = {
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+         JSONXX_XML_TAG "\n",
+
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+         JSONXX_XML_TAG "\n",
+};
+const char *defrootattrib[2] = {
     " xsi:schemaLocation=\"http://www.datapower.com/schemas/json jsonx.xsd\""
-    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-    " xmlns:json=\"http://www.ibm.com/xmlns/prod/2009/jsonx\"";
+        " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+        " xmlns:json=\"http://www.ibm.com/xmlns/prod/2009/jsonx\"",
+
+    ""
+};
 
 } // namespace
 
-std::string Object::jsonx( const std::string &header, const std::string &attrib ) const {
-    return ( header.empty() ? std::string(defheader) : header ) +
-        tag( *this, 0, std::string(), attrib.empty() ? std::string(defattrib) : attrib );
+std::string Object::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
+    assert( format == format::jsonx || format == format::jxml );
+
+    jsonxx::Value v;
+    v.object_value_ = const_cast<jsonxx::Object*>(this);
+    v.type_ = jsonxx::Value::OBJECT_;
+
+    std::string result = tag( format, 0, std::string(), v, attrib.empty() ? std::string(defrootattrib[format]) : attrib );
+
+    v.object_value_ = 0;
+    return ( header.empty() ? std::string(defheader[format]) : header ) + result;
 }
 
-std::string Array::jsonx( const std::string &header, const std::string &attrib ) const {
-    return ( header.empty() ? std::string(defheader) : header ) +
-        tag( *this, 0, std::string(), attrib.empty() ? std::string(defattrib) : attrib );
+std::string Array::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
+    assert( format == format::jsonx || format == format::jxml );
+
+    jsonxx::Value v;
+    v.array_value_ = const_cast<jsonxx::Array*>(this);
+    v.type_ = jsonxx::Value::ARRAY_;
+
+    std::string result = tag( format, 0, std::string(), v, attrib.empty() ? std::string(defrootattrib[format]) : attrib );
+
+    v.array_value_ = 0;
+    return ( header.empty() ? std::string(defheader[format]) : header ) + result;
 }
 
 }  // namespace jsonxx

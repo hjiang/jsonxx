@@ -1,6 +1,7 @@
 // -*- mode: c++; c-basic-offset: 4; -*-
 
 // Author: Hong Jiang <hong@hjiang.net>
+// Include a few sanity tests from https://github.com/isubiker/mljson/
 
 #include <cassert>
 #include <sstream>
@@ -243,17 +244,6 @@ int main() {
     }
 
     {
-        string teststr(
-                "{"
-                "  'this_array_has_formatting_issues': [true, 42, 54.7,],"
-                "  'this_object_too' : {'name' : \"GWB\", \"age\" : 60,},"
-                "}"
-                       );
-        istringstream input(teststr);
-        Object o;
-        assert(Object::parse(input, o));
-    }
-    {
         #define QUOTE(...) #__VA_ARGS__
         string input = QUOTE(
         {
@@ -302,8 +292,69 @@ int main() {
 
         Object o;
         if( Object::parse( istringstream( input ), o ) ) {
-            cout << o.jsonx() << endl;
+            cout << o.xml(format::jsonx) << endl;            // XML output, jsonx
+            cout << o.xml(format::jxml) << endl;             // XML output, jxml
         }
+    }
+
+#   define ASSERT_ARRAY(...)  for( Array  o; assert( Array::parse(istringstream(#__VA_ARGS__), o ) ), false; );
+#   define ASSERT_OBJECT(...) for( Object o; assert( Object::parse(istringstream(#__VA_ARGS__), o ) ), false; );
+
+    // Empty/raw datatypes
+    ASSERT_ARRAY( [true, false, null, [], {}] );
+
+    // Various numbers
+    ASSERT_ARRAY( [[-1], [1.2]] );
+
+    // General array with all data types
+    ASSERT_ARRAY( ["hello", 0, [], {}, null, false, true] );
+
+    // Nested objects
+    ASSERT_OBJECT( {"foo":1, "bar":{"baz":2, "yaz":3}} );
+
+    // Nested objects with trailing key/value
+    ASSERT_OBJECT( {"foo":1, "em":{"a":"b"}, "bar":"aa"} );
+
+    // Nested arrays
+    ASSERT_ARRAY( [1, 2, 3, [4, 5, [7, 8, 9], 6]] );
+
+    // Nested arrays with trailing values
+    ASSERT_ARRAY( [1, 2, 3, [4, 5, [7, 8, 9], 6], 10] );
+
+    // UTF-8
+    ASSERT_OBJECT( {"text":"は 2010/11/4 at 5:50 AM に 6'45\"/km のペースで 8.42 km を走りました http://go.nike.com/9rlcovd"} );
+
+    // Escaped UTF-8
+    ASSERT_OBJECT( {"text":"\u3050\u3089\u307e\u3041\u3067\u3061\u3085\u306d\u2665\u304a\u306f\u3088\u3046\u3067\u3059\uff01"} );
+
+    // Empty values
+    ASSERT_OBJECT( {"foo":"", "bar":""} );
+
+    // Escaped quotes
+    ASSERT_OBJECT( {"foo":"\"bar\""} );
+
+    // Newline
+    ASSERT_OBJECT( {"foo":"bar\nbaz"} );
+
+    // Could use more tests around escaping odd characters in key names that can't be used as an element name
+    // Escaping invalid xml element names
+    ASSERT_OBJECT( {"f•o":"bar"} );
+
+    // Escaping our invalid xml element name escaping
+    ASSERT_OBJECT( {"_foo":"bar"} );
+
+    // Empty key name (about to check in a fix)
+    ASSERT_OBJECT( {"":"bar"} );
+
+    // Trailing commas (if permissive mode is enabled)
+    if( !jsonxx::settings::strict ) {
+        ASSERT_ARRAY( [ true, 42, 54.7, ] );
+        ASSERT_OBJECT( { "hello": "world",} )
+    }
+
+    // Single-quoted strings (if permissive mode is enabled)
+    if( !jsonxx::settings::strict ) {
+        ASSERT_OBJECT( { 'single-quoted-strings': 'are "handy"' } );
     }
 
     cout << "All tests ok." << endl;
