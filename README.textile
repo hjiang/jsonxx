@@ -2,6 +2,9 @@ h1. Introduction
 
 JSON++ is a light-weight JSON parser written in C++.
 
+NOTE: For older compilers that do not support C++11, please use the "legacy"
+branch.
+
 h1. Contributors
 
 http://github.com/hjiang
