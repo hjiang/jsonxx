@@ -40,7 +40,8 @@ string teststr(
                );
 istringstream input(teststr);
 Object o;
-assert(Object::parse(input,o));
+assert(o << teststr);
+assert(Object::parse(input,o));               // Same than above
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
