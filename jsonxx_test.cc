@@ -247,13 +247,13 @@ int main() {
         #define QUOTE(...) #__VA_ARGS__
         string input = QUOTE(
         {
-          "name":"John Smith",
+          "name/surname":"John Smith",
           'alias': 'Joe',
           "address": {
             "streetAddress": "21 2nd Street",
             "city": "New York",
             "state": "NY",
-            "postalCode": 10021,
+            "postal-code": 10021,
           },
           "phoneNumbers": [
             "212 555-1111",
@@ -271,13 +271,13 @@ int main() {
         <json:object xsi:schemaLocation="http://www.datapower.com/schemas/json jsonx.xsd"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:json="http://www.ibm.com/xmlns/prod/2009/jsonx">
-          <json:string name="name">John Smith</json:string>
+          <json:string name="name/surname">John Smith</json:string>
           <json:string name="alias">Joe</json:string>
           <json:object name="address">
             <json:string name="streetAddress">21 2nd Street</json:string>
             <json:string name="city">New York</json:string>
             <json:string name="state">NY</json:string>
-            <json:number name="postalCode">10021</json:number>
+            <json:number name="postal-code">10021</json:number>
           </json:object>
           <json:array name="phoneNumbers">
             <json:string>212 555-1111</json:string>
@@ -291,10 +291,15 @@ int main() {
         );
 
         Object o;
-        if( Object::parse( istringstream( input ), o ) ) {
-            cout << o.xml(format::jsonx) << endl;            // XML output, jsonx
-            cout << o.xml(format::jxml) << endl;             // XML output, jxml
+        if( o << input ) {
+            cout << o.xml(format::jsonx) << endl;            // XML output, jsonx flavor
+            cout << o.xml(format::jxml) << endl;             // XML output, jxml flavor
+            cout << o.xml(format::jxmlex) << endl;           // XML output, jxmlex flavor
+        } else {
+            assert( !"provided JSON is valid. jsonxx::Object::operator<<() is broken!" );
         }
+
+        assert( jsonxx::validate(input) );
     }
 
 #   define ASSERT_ARRAY(...)  for( Array  o; assert( Array::parse(istringstream(#__VA_ARGS__), o ) ), false; );

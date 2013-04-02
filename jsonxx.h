@@ -5,11 +5,14 @@
 //   Sean Middleditch <sean@middleditch.us>
 //   rlyeh <https://github.com/r-lyeh>
 
+#pragma once
+
 #include <cassert>
 #include <iostream>
 #include <map>
 #include <vector>
 #include <string>
+#include <sstream>
 
 // jsonxx versioning: major.minor-extra where
 // major = { number }
@@ -28,8 +31,9 @@ enum settings {
 };
 
 enum format {
-  jsonx = 0,        // xml output, jsonx format. see http://goo.gl/I3cxs
-  jxml = 1          // xml output, jxml format. see https://github.com/r-lyeh/JXML
+  jsonx  = 0,        // xml output, JSONx  format. see http://goo.gl/I3cxs
+  jxml   = 1,        // xml output, JXML   format. see https://github.com/r-lyeh/JXML
+  jxmlex = 2         // xml output, JXMLex format. see https://github.com/r-lyeh/JXMLex
 };
 
 typedef double Number;
@@ -38,6 +42,11 @@ typedef std::string String;
 struct Null {};
 
 class Value;
+
+bool validate( const std::string &input );
+bool validate( std::istream &input );
+std::string xml( const std::string &input, unsigned format = jsonx );
+std::string xml( std::istream &input, unsigned format = jsonx );
 
 // A JSON Object
 class Object {
@@ -59,11 +68,21 @@ class Object {
 
   const std::map<std::string, Value*>& kv_map() const { return value_map_; }
   std::string xml( unsigned format = jsonx, const std::string &header = std::string(), const std::string &attrib = std::string() ) const;
+  void reset() {
+    value_map_.clear();
+  }
+  bool operator<<(std::istream &input) {
+    return parse(input,*this);
+  }
+  bool operator<<(const std::string &input) {
+    std::istringstream inputs(input);
+    return parse(inputs,*this);
+  }
+  typedef std::map<std::string, Value*> container;
  private:
   Object(const Object&);
   Object& operator=(const Object&);
-
-  std::map<std::string, Value*> value_map_;
+  container value_map_;
 };
 
 class Value;
@@ -89,17 +108,27 @@ class Array {
     return values_;
   }
   std::string xml( unsigned format = jsonx, const std::string &header = std::string(), const std::string &attrib = std::string() ) const;
+  void reset() {
+    values_.clear();
+  }
+  bool operator<<(std::istream &input) {
+    return parse(input,*this);
+  }
+  bool operator<<(const std::string &input) {
+    std::istringstream inputs(input);
+    return parse(inputs,*this);
+  }
+  typedef std::vector<Value*> container;
  private:
   Array(const Array&);
   Array& operator=(const Array&);
-  std::vector<Value*> values_;
+  container values_;
 };
 
 // A value could be a number, an array, a string, an object, a
 // boolean, or null
 class Value {
  public:
-  class Null {};
 
   Value();
   ~Value() { reset(); }
@@ -161,7 +190,7 @@ const T& Array::get(unsigned int i) const {
 
 template <typename T>
 bool Object::has(const std::string& key) const {
-  std::map<std::string, Value*>::const_iterator it(value_map_.find(key));
+  container::const_iterator it(value_map_.find(key));
   return it != value_map_.end() && it->second->is<T>();
 }
 

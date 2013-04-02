@@ -26,6 +26,7 @@ for JSON++ were:
 * Option for strict parsing (default is permissive). See jsonxx::settings enum.
 * JSONx support: JSON to XML transform. See http://goo.gl/I3cxs for details.
 * JXML support: JSON to JXML transform. See https://github.com/r-lyeh/JXML for details.
+* JXMLex support: JSON to JXMLex transform. See https://github.com/r-lyeh/JXMLex for details.
 
 h1. Usage
 
@@ -43,7 +44,8 @@ string teststr(
                );
 istringstream input(teststr);
 Object o;
-assert(Object::parse(input,o));
+assert(o << teststr);
+assert(Object::parse(input,o));               // Same than above
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
