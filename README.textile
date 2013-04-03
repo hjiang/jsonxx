@@ -2,6 +2,8 @@ h1. Introduction
 
 JSON++ is a light-weight JSON parser written in C++.
 
+NOTE: For older compilers that do not support C++11, please use the “legacy” branch.
+
 h1. Contributors
 
 http://github.com/hjiang
@@ -11,9 +13,9 @@ http://github.com/r-lyeh
 h1. Why another JSON parser?
 
 Perhaps because web service clients are usually written in dynamic
-languages these days, none of the existing C++ JSON parsers suite my
-needs very well, so I wrote one to used in another project. My goals
-for JSON++ were:
+languages these days, none of the existing C++ JSON parsers suit my
+needs very well, so I wrote one that I used in another project. My goals
+for JSON++ are:
 * Efficient in both memory and speed.
 * No third party dependencies. JSON++ only depends on the standard C++ library.
 * Cross platform.
@@ -21,9 +23,9 @@ for JSON++ were:
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
 * Option for strict parsing (default is permissive). See jsonxx::settings enum.
-* JSONx support: JSON to XML transform. See http://goo.gl/I3cxs for details.
-* JXML support: JSON to JXML transform. See https://github.com/r-lyeh/JXML for details.
-* JXMLex support: JSON to JXMLex transform. See https://github.com/r-lyeh/JXMLex for details.
+* Conversion from JSON to XML: JSONx flavour. See http://goo.gl/I3cxs for details.
+* Conversion from JSON to XML: JXML flavour. See https://github.com/r-lyeh/JXML for details.
+* Conversion from JSON to XML: JXMLex flavour. See https://github.com/r-lyeh/JXMLex for details.
 
 h1. Usage
 
@@ -39,10 +41,12 @@ string teststr(
         "  \"data\": [\"abcd\", 42],"
         "}"
                );
-istringstream input(teststr);
 Object o;
 assert(o << teststr);
+
+istringstream input(teststr);
 assert(Object::parse(input,o));               // Same than above
+
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
@@ -51,7 +55,9 @@ assert(o.has<Array>("data"));
 assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
 assert(!o.has<Number>("data"));
-cout << o.xml(jsonx) << endl;                 // XML transformation: JSONx schema
-cout << o.xml(jxml) << endl;                  // XML transformation: JXML schema
+
+cout << o.xml(jsonx) << endl;                 // XML conversion (JSONx)
+cout << o.xml(jxml) << endl;                  // XML conversion (JXML)
+cout << o.xml(jxmlex) << endl;                // XML conversion (JXMLex)
 </code>
 </pre>
