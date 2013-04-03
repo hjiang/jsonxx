@@ -31,6 +31,10 @@ The following snippet is from one of the unit tests. It's quite self-descriptive
 
 <pre>
 <code>
+
+using namespace std;
+using namespace jsonxx;
+
 string teststr(
         "{"
         "  \"foo\" : 1,"
@@ -39,12 +43,16 @@ string teststr(
         "  \"data\": [\"abcd\", 42],"
         "}"
                );
+
+// parse stream
 Object o;
 assert(o << teststr);
 
+// same than above
 istringstream input(teststr);
-assert(Object::parse(input,o));               // Same than above
+assert(Object::parse(input,o));
 
+// validation. checking for json types and values as well
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
@@ -54,8 +62,9 @@ assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
 assert(!o.has<Number>("data"));
 
-cout << o.xml(jsonx) << endl;                 // XML conversion (JSONx)
-cout << o.xml(jxml) << endl;                  // XML conversion (JXML)
-cout << o.xml(jxmlex) << endl;                // XML conversion (JXMLex)
+// XML conversion: JSONx, JXML and JXMLex flavours
+cout << o.xml(jsonx) << endl;
+cout << o.xml(jxml) << endl;
+cout << o.xml(jxmlex) << endl;
 </code>
 </pre>
