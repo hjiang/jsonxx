@@ -12,10 +12,8 @@ http://github.com/r-lyeh
 
 h1. Why another JSON parser?
 
-Perhaps because web service clients are usually written in dynamic
-languages these days, none of the existing C++ JSON parsers suit my
-needs very well, so I wrote one that I used in another project. My goals
-for JSON++ are:
+Perhaps because web service clients are usually written in dynamic languages these days, none of the existing C++ JSON parsers suit my needs very well, so I wrote one that I used in another project. My goals for JSON++ are:
+
 * Efficient in both memory and speed.
 * No third party dependencies. JSON++ only depends on the standard C++ library.
 * Cross platform.
