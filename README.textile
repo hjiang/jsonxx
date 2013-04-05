@@ -20,9 +20,11 @@ Perhaps because web service clients are usually written in dynamic languages the
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
 * Option for strict parsing (default is permissive). See jsonxx::settings enum.
-* JSONx support: JSON to XML transform. See http://goo.gl/I3cxs for details.
-* JXML support: JSON to JXML transform. See https://github.com/r-lyeh/JXML for details.
-* JXMLex support: JSON to JXMLex transform. See https://github.com/r-lyeh/JXMLex for details.
+* Able to construct documents dinamically.
+* JSON writer: write documents in JSON format.
+* XML writer: convert documents to JSONx format. See http://goo.gl/I3cxs for details.
+* XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
+* XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
 h1. Missing
 
@@ -33,8 +35,6 @@ h1. Usage
 The following snippets are from one of the unit tests. They are quite self-descriptive.
 
 <pre>
-<code>
-
 using namespace std;
 using namespace jsonxx;
 
@@ -45,17 +45,17 @@ string teststr(
         "  \"person\" : {\"name\" : \"GWB\", \"age\" : 60,},"
         "  \"data\": [\"abcd\", 42],"
         "}"
-               );
+);
 
-// parse stream
+// Parse string or stream
 Object o;
 assert(o.parse(teststr));
 
-// same than above
+// Same than above
 istringstream input(teststr);
 assert(Object::parse(input,o));
 
-// validation. checking for json types and values as well
+// Validation. Checking for JSON types and values as well
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
@@ -65,15 +65,15 @@ assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
 assert(!o.has<Number>("data"));
 cout << o.json() << endl;                     // JSON output
-cout << o.xml(JSONx) << endl;                 // XML conversion: JSONx subtype
-cout << o.xml(JXML) << endl;                  // XML conversion: JXML subtype
-cout << o.xml(JXMLex) << endl;                // XML conversion: JXMLex subtype
-</code>
+cout << o.xml(JSONx) << endl;                 // JSON to XML conversion (JSONx subtype)
+cout << o.xml(JXML) << endl;                  // JSON to XML conversion (JXML subtype)
+cout << o.xml(JXMLex) << endl;                // JSON to XML conversion (JXMLex subtype)
 </pre>
 
 <pre>
-<code>
 // Generate JSON document dinamically
+using namespace std;
+using namespace jsonxx;
 Array a;
 a << 123;
 a << "hello world";
@@ -82,5 +82,4 @@ a << 99.95f;
 a << 'h';
 a << Object("key", "value");
 cout << a.json() << endl;
-</code>
 </pre>
