@@ -15,7 +15,7 @@ extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
-int main() {
+void main() {
     using namespace jsonxx;
     using namespace std;
     {
@@ -291,10 +291,10 @@ int main() {
         );
 
         Object o;
-        if( o << input ) {
-            cout << o.xml(format::jsonx) << endl;            // XML output, jsonx flavor
-            cout << o.xml(format::jxml) << endl;             // XML output, jxml flavor
-            cout << o.xml(format::jxmlex) << endl;           // XML output, jxmlex flavor
+        if( o.parse(input) ) {
+            cout << o.xml(JSONx) << endl;            // XML output, JSONx flavor
+            cout << o.xml(JXML) << endl;             // XML output, JXML flavor
+            cout << o.xml(JXMLex) << endl;           // XML output, JXMLex flavor
         } else {
             assert( !"provided JSON is valid. jsonxx::Object::operator<<() is broken!" );
         }
@@ -352,14 +352,99 @@ int main() {
     ASSERT_OBJECT( {"":"bar"} );
 
     // Trailing commas (if permissive mode is enabled)
-    if( !jsonxx::settings::strict ) {
+    if( !jsonxx::Settings::Strict ) {
         ASSERT_ARRAY( [ true, 42, 54.7, ] );
         ASSERT_OBJECT( { "hello": "world",} )
     }
 
     // Single-quoted strings (if permissive mode is enabled)
-    if( !jsonxx::settings::strict ) {
+    if( !jsonxx::Settings::Strict ) {
         ASSERT_OBJECT( { 'single-quoted-strings': 'are "handy"' } );
+    }
+
+    {
+        jsonxx::Array a;
+        a << true;
+        a << false;
+        a << 'A';
+        a << 65;
+        a << 65L;
+        a << 65LL;
+        a << 65U;
+        a << 65UL;
+        a << 65ULL;
+        a << 65.f;
+        a << 65.0;
+        a << jsonxx::Value( "hello world" );
+        a << std::string("hello world");
+        a << "hello world";
+
+        assert( jsonxx::Array().parse( a.json() ) );   // self-evaluation
+        assert( validate( a.json() ) );                // self-evaluation
+    }
+
+    {
+        // Generate JSON document dinamically
+        jsonxx::Array a;
+        a << jsonxx::Null();           // C++11: 'a << nullptr' is preferred
+        a << 123;
+        a << "hello \"world\"";
+        a << 3.1415;
+        a << 99.95f;
+        a << 'h';
+
+        jsonxx::Object o;
+        o << jsonxx::Object( "key1", "value" );
+        o << "key2" << 123;
+        o << "key3" << a;
+
+        a << o;
+
+        assert( jsonxx::Array().parse( a.json() ) );   // self-evaluation
+        assert( validate( a.json() ) );                // self-evaluation
+    }
+
+    {
+        struct custom {};
+
+        jsonxx::Array a;
+        a << true;
+        a << false;
+
+        jsonxx::Object o;
+        o << jsonxx::Object( "number", 123 );
+        o << jsonxx::Object( "string", "hello world" );
+        o << jsonxx::Object( "boolean", false );
+        o << jsonxx::Object( "null", NULL );
+        o << jsonxx::Object( "array", a );
+        o << jsonxx::Object( "object", jsonxx::Object("child", "object") );
+        o << jsonxx::Object( "undefined", custom() );
+
+        std::cout << o.write(JSON) << std::endl;        // same than o.json()
+        std::cout << o.write(JSONx) << std::endl;       // same than o.xml()
+        std::cout << o.write(JXML) << std::endl;        // same than o.xml(JXML)
+        std::cout << o.write(JXMLex) << std::endl;      // same than o.xml(JXMLex)
+
+        assert( jsonxx::Object().parse( o.json() ) );   // self-evaluation
+        assert( validate( o.json() ) );                 // self-evaluation
+    }
+
+    {
+        // recursion test
+        jsonxx::Array a;
+        a << 123;
+        a << "hello world";
+        a << a;
+        assert( a.size() == 4 );
+    }
+
+    {
+        // recursion test
+        jsonxx::Object o;
+        o << jsonxx::Object( "number", 123 );
+        o << jsonxx::Object( "string", "world" );
+        o << jsonxx::Object( "recursion", o );
+        assert( o.size() == 3 );
     }
 
     cout << "All tests ok." << endl;

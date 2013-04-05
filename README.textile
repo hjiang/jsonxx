@@ -1,8 +1,7 @@
 h1. Introduction
 
-JSON++ is a light-weight JSON parser written in C++.
-
-NOTE: For older compilers that do not support C++11, please use the “legacy” branch.
+JSON++ is a light-weight JSON parser, writer and reader written in C++.
+JSON++ can also convert JSON documents into lossless XML documents.
 
 h1. Contributors
 
@@ -21,13 +20,17 @@ Perhaps because web service clients are usually written in dynamic languages the
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
 * Option for strict parsing (default is permissive). See jsonxx::settings enum.
-* Conversion from JSON to XML: JSONx flavour. See http://goo.gl/I3cxs for details.
-* Conversion from JSON to XML: JXML flavour. See https://github.com/r-lyeh/JXML for details.
-* Conversion from JSON to XML: JXMLex flavour. See https://github.com/r-lyeh/JXMLex for details.
+* JSONx support: JSON to XML transform. See http://goo.gl/I3cxs for details.
+* JXML support: JSON to JXML transform. See https://github.com/r-lyeh/JXML for details.
+* JXMLex support: JSON to JXMLex transform. See https://github.com/r-lyeh/JXMLex for details.
+
+h1. Missing
+
+* Custom JSON comments (/**/ //) when permissive parsing is enabled.
 
 h1. Usage
 
-The following snippet is from one of the unit tests. It's quite self-descriptive.
+The following snippets are from one of the unit tests. They are quite self-descriptive.
 
 <pre>
 <code>
@@ -46,7 +49,7 @@ string teststr(
 
 // parse stream
 Object o;
-assert(o << teststr);
+assert(o.parse(teststr));
 
 // same than above
 istringstream input(teststr);
@@ -61,10 +64,23 @@ assert(o.has<Array>("data"));
 assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
 assert(!o.has<Number>("data"));
+cout << o.json() << endl;                     // JSON output
+cout << o.xml(JSONx) << endl;                 // XML conversion: JSONx subtype
+cout << o.xml(JXML) << endl;                  // XML conversion: JXML subtype
+cout << o.xml(JXMLex) << endl;                // XML conversion: JXMLex subtype
+</code>
+</pre>
 
-// XML conversion: JSONx, JXML and JXMLex flavours
-cout << o.xml(jsonx) << endl;
-cout << o.xml(jxml) << endl;
-cout << o.xml(jxmlex) << endl;
+<pre>
+<code>
+// Generate JSON document dinamically
+Array a;
+a << 123;
+a << "hello world";
+a << 3.1415;
+a << 99.95f;
+a << 'h';
+a << Object("key", "value");
+cout << a.json() << endl;
 </code>
 </pre>
