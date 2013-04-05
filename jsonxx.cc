@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <sstream>
 #include <vector>
+#include <limits>
 
 namespace jsonxx {
 
@@ -435,6 +436,8 @@ namespace json {
                 return remove_last_comma( ss.str() ) + tab + "}" ",\n";
 
             case jsonxx::Value::NUMBER_:
+                // max precision
+                ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
                 ss << t.number_value_;
                 return ss.str() + ",\n";
         }
@@ -578,6 +581,8 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
                  + tab + close_tag( format, 'o' ) + '\n';
 
         case jsonxx::Value::NUMBER_:
+            // max precision
+            ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
             ss << t.number_value_;
             return tab + open_tag( format, 'n', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
