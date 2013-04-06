@@ -340,7 +340,7 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v) {
     jsonxx::Array::container::const_iterator
         it = v.values().begin(),
         end = v.values().end();
-    for (/**/; it != end; /**/) {
+    while (it != end) {
         stream << *(*it);
         ++it;
         if (it != end) {
@@ -355,7 +355,7 @@ std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v) {
     jsonxx::Object::container::const_iterator
         it = v.kv_map().begin(),
         end = v.kv_map().end();
-    for (/**/ ; it != end; /**/) {
+    while (it != end) {
         jsonxx::stream_string(stream, it->first);
         stream << ": " << *(it->second);
         ++it;

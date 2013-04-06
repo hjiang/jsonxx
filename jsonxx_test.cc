@@ -15,7 +15,7 @@ extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
-void main() {
+int main() {
     using namespace jsonxx;
     using namespace std;
     {
@@ -448,4 +448,5 @@ void main() {
     }
 
     cout << "All tests ok." << endl;
+    return 0;
 }
