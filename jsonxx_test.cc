@@ -2,6 +2,7 @@
 
 // Author: Hong Jiang <hong@hjiang.net>
 // Include a few sanity tests from https://github.com/isubiker/mljson/
+// Include a few samples from http://www.json.org
 
 #include <cassert>
 #include <sstream>
@@ -25,6 +26,7 @@ int main() {
         assert(parse_string(input, &value));
         assert(value == "field1");
     }
+    if( !Settings::Strict )
     {
         string teststr("'field1'");
         string value;
@@ -39,6 +41,7 @@ int main() {
         assert(parse_string(input, &value));
         assert(value == "  field1");
     }
+    if( !Settings::Strict )
     {
         string teststr("'  field1'");
         string value;
@@ -53,12 +56,21 @@ int main() {
         assert(parse_string(input, &value));
         assert(value == "field1");
     }
+    if( !Settings::Strict )
     {
         string teststr("  'field1'");
         string value;
         istringstream input(teststr);
         assert(parse_string(input, &value));
         assert(value == "field1");
+    }
+    {
+        // 'escaped text to unescaped text' test
+        string teststr("\"\\b\\f\\n\\r\\t\\u0014\\u0002\"");
+        string value;
+        istringstream input(teststr);
+        assert(parse_string(input, &value));
+        assert( value == "\b\f\n\r\t\xe\x2" );
     }
     {
         string teststr("6");
@@ -149,6 +161,7 @@ int main() {
         stream << v;
         assert(stream.str() == "\"field1\"");
     }
+    if( !Settings::Strict )
     {
         string teststr("'field1'");
         istringstream input(teststr);
@@ -243,6 +256,7 @@ int main() {
         assert(o.get<Object>("place").has<Object>("attributes"));
     }
 
+    if( !Settings::Strict )
     {
         #define QUOTE(...) #__VA_ARGS__
         string input = QUOTE(
@@ -304,6 +318,21 @@ int main() {
 
 #   define ASSERT_ARRAY(...)  for( Array  o; assert( Array::parse(istringstream(#__VA_ARGS__), o ) ), false; );
 #   define ASSERT_OBJECT(...) for( Object o; assert( Object::parse(istringstream(#__VA_ARGS__), o ) ), false; );
+
+    // Four samples from www.json.org
+    ASSERT_OBJECT( {
+        "name": "Jack (\"Bee\") Nimble",
+        "format": {
+            "type":       "rect",
+            "width":      1920,
+            "height":     1080,
+            "interlace":  false,
+            "frame rate": 24
+        }
+    } );
+    ASSERT_OBJECT( { "color": "blue", "closed": true, "points": [[10,10], [20,10], [20,20], [10,20]] } );
+    ASSERT_ARRAY( [ [0, -1, 0], [1, 0, 0], [0, 0, 1] ] );
+    ASSERT_ARRAY( ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] );
 
     // Empty/raw datatypes
     ASSERT_ARRAY( [true, false, null, [], {}] );

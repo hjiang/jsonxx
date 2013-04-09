@@ -81,6 +81,17 @@ bool parse_string(std::istream& input, String* value) {
                 case 't':
                     value->push_back('\t');
                     break;
+                case 'u': {
+                        int i;
+                        std::stringstream ss;
+                        for( i = 0; (!input.eof() && input.good()) && i < 4; ++i ) {
+                            input.get(ch);
+                            ss << ch;
+                        }
+                        if( input.good() && (ss >> i) )
+                            value->push_back(i);
+                    }
+                    break;
                 default:
                     if (ch != delimiter) {
                         value->push_back('\\');
@@ -372,20 +383,41 @@ namespace {
 
 typedef unsigned char byte;
 
-std::string escape_string( const std::string &input ) {
+//template<bool quote>
+std::string escape_string( const std::string &input, const bool quote = false ) {
     static std::string map[256], *once = 0;
     if( !once ) {
-        for( int i = 0; i < 256; ++i )
+        // base
+        for( int i = 0; i < 256; ++i ) {
             map[ i ] = std::string() + char(i);
+        }
+        // non-printable
+        for( int i = 0; i < 32; ++i ) {
+            std::stringstream str;
+            str << "\\u" << std::hex << std::setw(6) << std::setfill('0') << i;
+            map[ i ] = str.str();
+        }
+        // exceptions
         map[ byte('"') ] = "\\\"";
-        map[ byte('\'') ] = "\\\'";
+        map[ byte('\\') ] = "\\\\";
+        map[ byte('/') ] = "\\/";
+        map[ byte('\b') ] = "\\b";
+        map[ byte('\f') ] = "\\f";
+        map[ byte('\n') ] = "\\n";
+        map[ byte('\r') ] = "\\r";
+        map[ byte('\t') ] = "\\t";
+
         once = map;
     }
     std::string output;
+    output.reserve( input.size() * 2 + 2 ); // worst scenario
+    if( quote ) output += '"';
     for( std::string::const_iterator it = input.begin(), end = input.end(); it != end; ++it )
         output += map[ byte(*it) ];
+    if( quote ) output += '"';
     return output;
 }
+
 
 namespace json {
 
@@ -460,6 +492,7 @@ std::string escape_attrib( const std::string &input ) {
         once = map;
     }
     std::string output;
+    output.reserve( input.size() ); // worst scenario
     for( std::string::const_iterator it = input.begin(), end = input.end(); it != end; ++it )
         output += map[ byte(*it) ];
     return output;
@@ -475,6 +508,7 @@ std::string escape_tag( const std::string &input ) {
         once = map;
     }
     std::string output;
+    output.reserve( input.size() * 4 ); // worst scenario
     for( std::string::const_iterator it = input.begin(), end = input.end(); it != end; ++it )
         output += map[ byte(*it) ];
     return output;
@@ -677,7 +711,7 @@ std::string Array::xml( unsigned format, const std::string &header, const std::s
 
 bool validate( std::istream &input ) {
 
-    // trim chars
+    // trim non-printable chars
     for( char ch(0); !input.eof() && input.peek() <= 32; )
         input.get(ch);
 
@@ -696,7 +730,7 @@ bool validate( std::istream &input ) {
             return true;
     }
 
-    // bad json, return empty xml
+    // bad json input
     return false;
 }
 
@@ -708,7 +742,7 @@ std::string xml( std::istream &input, unsigned format ) {
     using namespace xml;
     assert( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
 
-    // trim chars
+    // trim non-printable chars
     for( char ch(0); !input.eof() && input.peek() <= 32; )
         input.get(ch);
 
