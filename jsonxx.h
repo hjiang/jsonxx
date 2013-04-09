@@ -27,7 +27,7 @@
 namespace jsonxx {
 
 enum Settings {
-  Strict = false    // true = strict parsing, false = permissive parsing
+  Strict = false     // true = strict parsing, false = permissive parsing
 };
 
 enum Format {

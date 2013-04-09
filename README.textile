@@ -81,5 +81,9 @@ a << 3.1415;
 a << 99.95f;
 a << 'h';
 a << Object("key", "value");
-cout << a.json() << endl;
+Object o;
+o << "key1" << "value";
+o << "key2" << 123;
+o << "key3" << a;
+cout << o.json() << endl;
 </pre>
