@@ -28,14 +28,13 @@ Perhaps because web service clients are usually written in dynamic languages the
 
 h1. Notes about permissive parsing
 
-When permissive parsing is enabled, JSONxx handles:
+Permissive parsing is enabled by default. In this mode, JSONxx handles:
 
 * Ending commas in arrays and objects: { "key": [0,1,2,], }
 * Single-quoted strings: ['hello', "world"]
 * C++ style comments: { "width": 320, "height": 240 } //Picture details
 
-Default parsing is permissive, unless strict is configured.
-Please change jsonxx::Settings to change this behaviour.
+Strict parsing can be enabled by toggling jsonxx::Settings::Strict enumerator value.
 
 h1. Missing
 
