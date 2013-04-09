@@ -476,6 +476,22 @@ int main() {
         assert( o.size() == 3 );
     }
 
+    if( !jsonxx::Settings::Strict )
+    {
+        // C++ style comments test
+        string teststr(
+                "//this is comment #1 {\n"
+                "{"
+                "  \"foo\" : 1,"
+                "  \"bar\" : false, //this is comment #2\n"
+                "  \"person\" : {\"name //this shall not be removed\" : \"GWB\", \"age\" : 60},"
+                "  \"data\": [\"abcd\", 42, 54.7]"
+                "} //this is comment #3"
+       );
+        jsonxx::Object o;
+        assert( o.parse(teststr) );
+    }
+
     cout << "All tests ok." << endl;
     return 0;
 }

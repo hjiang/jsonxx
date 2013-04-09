@@ -20,6 +20,42 @@ bool match(const char* pattern, std::istream& input);
 bool parse_string(std::istream& input, String* value);
 bool parse_number(std::istream& input, Number* value);
 
+// Try to consume C++ comments from the input stream
+bool comment(std::istream &input) {
+    if( !Settings::Strict )
+    if( !input.eof() )
+    {
+        char ch0(0);
+        input.get(ch0);
+
+        if( !input.eof() )
+        {
+            char ch1(0);
+            input.get(ch1);
+
+            if( ch0 == '/' && ch1 == '/' )
+            {
+                // trim chars till \r or \n
+                for( char ch(0); !input.eof() && (input.peek() != '\r' && input.peek() != '\n'); )
+                    input.get(ch);
+
+                // consume spaces, tabs, \r or \n, unless eof is found
+                if( !input.eof() )
+                    input >> std::ws;
+                return true;
+            }
+
+            input.unget();
+            input.clear();
+        }
+
+        input.unget();
+        input.clear();
+    }
+
+    return false;
+}
+
 // Try to consume characters from the input stream and match the
 // pattern string.
 bool match(const char* pattern, std::istream& input) {
@@ -30,6 +66,8 @@ bool match(const char* pattern, std::istream& input) {
         input.get(ch);
         if (ch != *cur) {
             input.putback(ch);
+            if( comment(input) )
+                continue;
             while (cur > pattern) {
                 cur--;
                 input.putback(*cur);
