@@ -19,22 +19,27 @@ Perhaps because web service clients are usually written in dynamic languages the
 * Robust.
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
-* Option for strict parsing (default is permissive). See jsonxx::Settings enum.
 * Able to construct documents dinamically.
 * JSON writer: write documents in JSON format.
 * XML writer: convert documents to JSONx format. See http://goo.gl/I3cxs for details.
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
-h1. Notes about permissive parsing
+h1. Notes about strict parsing
 
-Permissive parsing is enabled by default. In this mode, JSONxx handles:
+JSONxx can parse JSON documents in strict or permissive mode. 
 
-* Ending commas in arrays and objects: { "key": [0,1,2,], }
-* Single-quoted strings: ['hello', "world"]
+When strict parsing is enabled, JSONxx parser will accept:
+* Fully conformant JSON documents *only*
+
+When strict parsing is disabled, JSONxx parser will accept:
+* Fully conformant JSON documents, plus following *three additions*
+* Ending commas in arrays and objects: { "array": [0,1,2,], }
+* Single quoted strings: ['hello', "world"]
 * C++ style comments: { "width": 320, "height": 240 } //Picture details
 
-Strict parsing can be enabled by toggling jsonxx::Settings::Strict enumerator value.
+Strict parsing mode is disabled by default.
+Check jsonxx::Settings::Strict enum to tweak it.
 
 h1. Missing
 
