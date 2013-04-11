@@ -38,8 +38,7 @@ When strict parsing is disabled, JSONxx parser will accept:
 * Single quoted strings: ['hello', "world"]
 * C++ style comments: { "width": 320, "height": 240 } //Picture details
 
-Strict parsing mode is disabled by default.
-Check jsonxx::Settings::Strict enum to tweak it.
+Strict parsing mode is disabled by default. Check jsonxx::Settings::Strict enum to tweak it.
 
 h1. Missing
 
