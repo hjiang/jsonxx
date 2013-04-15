@@ -7,6 +7,7 @@
 #include <cassert>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 #include "jsonxx.h"
 
@@ -16,7 +17,19 @@ extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
+bool is_asserting() {
+  bool asserting = false;
+  assert( (asserting ^= true) );
+  return asserting;
+}
+
 int main() {
+
+    if( !is_asserting() ) {
+        std::cout << "Assertions disabled. Aborting tests..." << std::endl;
+        return -1;
+    }
+
     using namespace jsonxx;
     using namespace std;
     {

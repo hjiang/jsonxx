@@ -39,7 +39,7 @@ bool comment(std::istream &input) {
                 for( char ch(0); !input.eof() && (input.peek() != '\r' && input.peek() != '\n'); )
                     input.get(ch);
 
-                // consume spaces, tabs, \r or \n, unless eof is found
+                // consume spaces, tabs, \r or \n, in case no eof is found
                 if( !input.eof() )
                     input >> std::ws;
                 return true;
