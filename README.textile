@@ -34,9 +34,9 @@ When strict parsing is enabled, JSONxx parser will accept:
 
 When strict parsing is disabled, JSONxx parser will accept:
 * Fully conformant JSON documents, plus following *three additions*
-* Ending commas in arrays and objects: `{ "array": [0,1,2,], }`
-* Single quoted strings: `['hello', "world"]`
-* C++ style comments: `{ "width": 320, "height": 240 } //Picture details`
+* Ending commas in arrays and objects: <code>{ "array": [0,1,2,], }</code>
+* Single quoted strings: <code>['hello', "world"]</code>
+* C++ style comments: <code>{ "width": 320, "height": 240 } //Picture details</code>
 
 Strict parsing mode is disabled by default. Check jsonxx::Settings::Strict enum to tweak it.
 
