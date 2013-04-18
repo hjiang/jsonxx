@@ -22,16 +22,30 @@ Perhaps because web service clients are usually written in dynamic languages the
 * Robust.
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
-* Option for strict parsing (default is permissive). See jsonxx::settings enum.
 * Able to construct documents dinamically.
 * JSON writer: write documents in JSON format.
 * XML writer: convert documents to JSONx format. See http://goo.gl/I3cxs for details.
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
+h1. Notes about permissive/strict parsing
+
+JSONxx can parse JSON documents in strict or permissive mode. 
+
+When strict parsing is enabled, JSONxx parser will accept:
+* Fully conformant JSON documents *only*
+
+When strict parsing is disabled, JSONxx parser will accept:
+* Fully conformant JSON documents, plus following *three additions*
+* Ending commas in arrays and objects: <code>{ "array": [0,1,2,], }</code>
+* Single quoted strings: <code>['hello', "world"]</code>
+* C++ style comments: <code>{ "width": 320, "height": 240 } //Picture details</code>
+
+Strict parsing mode is disabled by default. Check jsonxx::Settings::Strict enum to tweak it.
+
 h1. Missing
 
-* Custom JSON comments (/**/ //) when permissive parsing is enabled.
+* Custom JSON comments (C style /**/) when permissive parsing is enabled.
 
 h1. Usage
 
@@ -84,5 +98,9 @@ a << 3.1415;
 a << 99.95f;
 a << 'h';
 a << Object("key", "value");
-cout << a.json() << endl;
+Object o;
+o << "key1" << "value";
+o << "key2" << 123;
+o << "key3" << a;
+cout << o.json() << endl;
 </pre>
