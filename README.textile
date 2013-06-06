@@ -3,9 +3,6 @@ h1. Introduction
 JSON++ is a light-weight JSON parser, writer and reader written in C++.
 JSON++ can also convert JSON documents into lossless XML documents.
 
-NOTE: For older compilers that do not support C++11, please use the "legacy"
-branch.
-
 h1. Contributors
 
 http://github.com/hjiang
@@ -28,7 +25,7 @@ Perhaps because web service clients are usually written in dynamic languages the
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
-h1. Notes about permissive/strict parsing
+h1. Notes about strict/permissive parsing
 
 JSONxx can parse JSON documents in strict or permissive mode. 
 

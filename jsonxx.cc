@@ -16,6 +16,8 @@
 
 namespace jsonxx {
 
+//static_assert( sizeof(unsigned long long) < sizeof(long double), "'long double' cannot hold 64bit values in this compiler :(");
+
 bool match(const char* pattern, std::istream& input);
 bool parse_string(std::istream& input, String* value);
 bool parse_number(std::istream& input, Number* value);
@@ -183,10 +185,7 @@ bool parse_number(std::istream& input, Number* value) {
 Object::Object() : value_map_() {}
 
 Object::~Object() {
-    container::iterator i;
-    for (i = value_map_.begin(); i != value_map_.end(); ++i) {
-        delete i->second;
-    }
+    reset();
 }
 
 bool Object::parse(std::istream& input, Object& object) {
@@ -287,10 +286,7 @@ bool Value::parse(std::istream& input, Value& value) {
 Array::Array() : values_() {}
 
 Array::~Array() {
-    for (container::iterator i = values_.begin();
-         i != values_.end(); ++i) {
-        delete *i;
-    }
+    reset();
 }
 
 bool Array::parse(std::istream& input, Array& array) {
@@ -459,7 +455,8 @@ std::string escape_string( const std::string &input, const bool quote = false ) 
 
 namespace json {
 
-    std::string &remove_last_comma( std::string &input ) {
+    std::string remove_last_comma( const std::string &_input ) {
+        std::string input( _input );
         size_t size = input.size();
         if( size > 2 )
             if( input[ size - 2 ] == ',' )
@@ -773,7 +770,8 @@ bool validate( std::istream &input ) {
 }
 
 bool validate( const std::string &input ) {
-    return jsonxx::validate( std::istringstream(input) );
+    std::istringstream is( input );
+    return jsonxx::validate( is );
 }
 
 std::string xml( std::istream &input, unsigned format ) {
@@ -804,7 +802,8 @@ std::string xml( std::istream &input, unsigned format ) {
 }
 
 std::string xml( const std::string &input, unsigned format ) {
-    return jsonxx::xml( std::istringstream(input), format );
+    std::istringstream is( input );
+    return jsonxx::xml( is, format );
 }
 
 
@@ -822,6 +821,10 @@ void Object::import( const Object &other ) {
         it = other.value_map_.begin(),
         end = other.value_map_.end();
     for (/**/ ; it != end ; ++it) {
+      container::iterator found = value_map_.find(it->first);
+      if( found != value_map_.end() ) {
+        delete found->second;
+      }
       value_map_[ it->first ] = new Value( *it->second );
     }
   } else {
@@ -831,12 +834,18 @@ void Object::import( const Object &other ) {
 }
 void Object::import( const std::string &key, const Value &value ) {
   odd.clear();
+  container::iterator found = value_map_.find(key);
+  if( found != value_map_.end() ) {
+    delete found->second;
+  }
   value_map_[ key ] = new Value( value );
 }
-Object &Object::operator=(const Object &value) {
+Object &Object::operator=(const Object &other) {
   odd.clear();
-  reset();
-  import(value);
+  if (this != &other) {
+    reset();
+    import(other);
+  }
   return *this;
 }
 Object &Object::operator<<(const Value &value) {
@@ -865,6 +874,10 @@ std::string Object::write( unsigned format ) const {
   return format == JSON ? json() : xml(format);
 }
 void Object::reset() {
+  container::iterator i;
+  for (i = value_map_.begin(); i != value_map_.end(); ++i) {
+    delete i->second;
+  }
   value_map_.clear();
 }
 bool Object::operator<<(std::istream &input) {
@@ -874,7 +887,8 @@ bool Object::parse(std::istream &input) {
   return parse(input,*this);
 }
 bool Object::parse(const std::string &input) {
-  return parse(std::istringstream(input),*this);
+  std::istringstream is( input );
+  return parse(is,*this);
 }
 
 
@@ -908,6 +922,9 @@ bool Array::empty() const {
   return values_.size() == 0;
 }
 void Array::reset() {
+  for (container::iterator i = values_.begin(); i != values_.end(); ++i) {
+    delete *i;
+  }
   values_.clear();
 }
 bool Array::operator<<(std::istream &input) {
@@ -917,7 +934,8 @@ bool Array::parse(std::istream &input) {
   return parse(input,*this);
 }
 bool Array::parse(const std::string &input) {
-  return parse(std::istringstream(input),*this);
+  std::istringstream is(input);
+  return parse(is,*this);
 }
 Array &Array::operator<<(const Array &other) {
   import(other);
@@ -928,8 +946,10 @@ Array &Array::operator<<(const Value &value) {
   return *this;
 }
 Array &Array::operator=(const Array &other) {
-  reset();
-  import(other);
+  if( this != &other ) {
+    reset();
+    import(other);
+  }
   return *this;
 }
 Array &Array::operator=(const Value &value) {

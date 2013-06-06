@@ -216,7 +216,8 @@ int main() {
         assert(o.has<Array>("data"));
         assert(o.get<Array>("data").get<Number>(1) == 42);
         assert(o.get<Array>("data").get<String>(0) == "abcd");
-        assert(o.get<Array>("data").get<Number>(2) == 54.7);
+        assert(o.get<Array>("data").get<Number>(2) - 54.7 < 1e-6 ||
+             - o.get<Array>("data").get<Number>(2) + 54.7 < 1e-6 );
         assert(!o.has<Number>("data"));
     }
     {
@@ -329,8 +330,8 @@ int main() {
         assert( jsonxx::validate(input) );
     }
 
-#   define ASSERT_ARRAY(...)  for( Array  o; assert( Array::parse(istringstream(#__VA_ARGS__), o ) ), false; );
-#   define ASSERT_OBJECT(...) for( Object o; assert( Object::parse(istringstream(#__VA_ARGS__), o ) ), false; );
+#   define ASSERT_ARRAY(...)  do { istringstream is(#__VA_ARGS__); Array  a; assert(  Array::parse(is, a) ); } while(0)
+#   define ASSERT_OBJECT(...) do { istringstream is(#__VA_ARGS__); Object o; assert( Object::parse(is, o) ); } while(0)
 
     // Four samples from www.json.org
     ASSERT_OBJECT( {
@@ -396,7 +397,7 @@ int main() {
     // Trailing commas (if permissive mode is enabled)
     if( !jsonxx::Settings::Strict ) {
         ASSERT_ARRAY( [ true, 42, 54.7, ] );
-        ASSERT_OBJECT( { "hello": "world",} )
+        ASSERT_OBJECT( { "hello": "world",} );
     }
 
     // Single-quoted strings (if permissive mode is enabled)
