@@ -858,7 +858,8 @@ Object &Object::operator<<(const Value &value) {
   return *this;
 }
 Object &Object::operator<<(const Object &value) {
-  import(value);
+  import( std::string(odd),value);
+  odd.clear();
   return *this;
 }
 size_t Object::size() const {

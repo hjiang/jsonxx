@@ -437,7 +437,7 @@ int main() {
         a << 'h';
 
         jsonxx::Object o;
-        o << jsonxx::Object( "key1", "value" );
+        o << "key1" << "value";
         o << "key2" << 123;
         o << "key3" << a;
 
@@ -448,6 +448,22 @@ int main() {
     }
 
     {
+        // Generate JSON document dinamically
+        jsonxx::Object o1;
+        o1 << "key1" << "value 1";
+        o1 << "key2" << 123;
+
+        jsonxx::Object o2;
+        o2 << "key3" << "value 2";
+        o2 << "key4" << 456;
+
+        o1 << "key3" << o2;
+
+        assert( jsonxx::Object().parse( o1.json() ) );  // self-evaluation
+        assert( validate( o1.json() ) );                // self-evaluation
+    }
+
+    {
         struct custom {};
 
         jsonxx::Array a;
@@ -455,13 +471,13 @@ int main() {
         a << false;
 
         jsonxx::Object o;
-        o << jsonxx::Object( "number", 123 );
-        o << jsonxx::Object( "string", "hello world" );
-        o << jsonxx::Object( "boolean", false );
-        o << jsonxx::Object( "null", NULL );
-        o << jsonxx::Object( "array", a );
-        o << jsonxx::Object( "object", jsonxx::Object("child", "object") );
-        o << jsonxx::Object( "undefined", custom() );
+        o << "number" << 123;
+        o << "string" << "hello world";
+        o << "boolean" << false;
+        o << "null" << NULL;
+        o << "array" << a;
+        o << "object" << jsonxx::Object("child", "object");
+        o << "undefined" << custom();
 
         std::cout << o.write(JSON) << std::endl;        // same than o.json()
         std::cout << o.write(JSONx) << std::endl;       // same than o.xml()
@@ -484,9 +500,9 @@ int main() {
     {
         // recursion test
         jsonxx::Object o;
-        o << jsonxx::Object( "number", 123 );
-        o << jsonxx::Object( "string", "world" );
-        o << jsonxx::Object( "recursion", o );
+        o << "number" << 123;
+        o << "string" << "world";
+        o << "recursion" << o;
         assert( o.size() == 3 );
     }
 
