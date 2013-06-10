@@ -14,6 +14,27 @@
 #include <vector>
 #include <limits>
 
+// Snippet that creates an assertion function that works both in DEBUG & RELEASE mode.
+// JSONXX_ASSERT(...) macro will redirect to this. assert() macro is kept untouched.
+#if defined(NDEBUG) || defined(_NDEBUG)
+#   define JSONXX_REENABLE_NDEBUG
+#   undef  NDEBUG
+#   undef _NDEBUG
+#endif
+#include <stdio.h>
+#include <cassert>
+void jsonxx::assertion( const char *file, int line, const char *expression, bool result ) {
+    if( !result ) {
+        fprintf( stderr, "[JSONXX] expression '%s' failed at %s:%d -> ", expression, file, line );
+        assert( 0 );
+    }
+}
+#if defined(JSONXX_REENABLE_NDEBUG)
+#   define  NDEBUG
+#   define _NDEBUG
+#endif
+#include <cassert>
+
 namespace jsonxx {
 
 //static_assert( sizeof(unsigned long long) < sizeof(long double), "'long double' cannot hold 64bit values in this compiler :(");
@@ -705,7 +726,7 @@ std::string Object::json() const {
 
 std::string Object::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-    assert( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
 
     jsonxx::Value v;
     v.object_value_ = const_cast<jsonxx::Object*>(this);
@@ -732,7 +753,7 @@ std::string Array::json() const {
 
 std::string Array::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-    assert( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
 
     jsonxx::Value v;
     v.array_value_ = const_cast<jsonxx::Array*>(this);
@@ -776,7 +797,7 @@ bool validate( const std::string &input ) {
 
 std::string xml( std::istream &input, unsigned format ) {
     using namespace xml;
-    assert( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
 
     // trim non-printable chars
     for( char ch(0); !input.eof() && input.peek() <= 32; )

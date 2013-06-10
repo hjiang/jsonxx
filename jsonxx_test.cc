@@ -17,16 +17,20 @@ extern bool parse_number(std::istream& input, Number* value);
 extern bool match(const char* pattern, std::istream& input);
 }
 
+enum {
+    be_verbose = false
+};
+
 bool is_asserting() {
-  bool asserting = false;
-  assert( (asserting ^= true) );
-  return asserting;
+    bool asserting = false;
+    JSONXX_ASSERT( asserting ^= true );
+    return asserting;
 }
 
 int main() {
 
     if( !is_asserting() ) {
-        std::cout << "Assertions disabled. Aborting tests..." << std::endl;
+        std::cout << "JSONXX_ASSERT() is not working. Assertions are disabled somehow. Aborting tests..." << std::endl;
         return -1;
     }
 
@@ -36,166 +40,166 @@ int main() {
         string teststr("\"field1\"");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "field1");
     }
     if( !Settings::Strict )
     {
         string teststr("'field1'");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "field1");
     }
     {
         string teststr("\"  field1\"");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "  field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "  field1");
     }
     if( !Settings::Strict )
     {
         string teststr("'  field1'");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "  field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "  field1");
     }
     {
         string teststr("  \"field1\"");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "field1");
     }
     if( !Settings::Strict )
     {
         string teststr("  'field1'");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert(value == "field1");
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT(value == "field1");
     }
     {
         // 'escaped text to unescaped text' test
         string teststr("\"\\b\\f\\n\\r\\t\\u0014\\u0002\"");
         string value;
         istringstream input(teststr);
-        assert(parse_string(input, &value));
-        assert( value == "\b\f\n\r\t\xe\x2" );
+        JSONXX_ASSERT(parse_string(input, &value));
+        JSONXX_ASSERT( value == "\b\f\n\r\t\xe\x2" );
     }
     {
         string teststr("6");
         istringstream input(teststr);
         Number value;
-        assert(parse_number(input, &value));
-        assert(value == 6);
+        JSONXX_ASSERT(parse_number(input, &value));
+        JSONXX_ASSERT(value == 6);
     }
     {
         string teststr(" }");
         istringstream input(teststr);
-        assert(match("}", input));
+        JSONXX_ASSERT(match("}", input));
     }
     {
         string teststr("{ \"field1\" : 6 }");
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
+        JSONXX_ASSERT(Object::parse(input, o));
     }
     {
         string teststr("{ \"field1 : 6 }");
         istringstream input(teststr);
         Object o;
-        assert(!Object::parse(input, o));
+        JSONXX_ASSERT(!Object::parse(input, o));
     }
     {
         string teststr("6");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Number>());
-        assert(v.get<Number>() == 6);
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Number>());
+        JSONXX_ASSERT(v.get<Number>() == 6);
     }
     {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Number>());
-        assert(v.get<Number>() == 6);
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Number>());
+        JSONXX_ASSERT(v.get<Number>() == 6);
     }
     {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Number>());
-        assert(v.get<Number>() == -6);
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Number>());
+        JSONXX_ASSERT(v.get<Number>() == -6);
     }
     {
         string teststr("asdf");
         istringstream input(teststr);
         Value v;
-        assert(!Value::parse(input, v));
+        JSONXX_ASSERT(!Value::parse(input, v));
     }
     {
         string teststr("true");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Boolean>());
-        assert(v.get<Boolean>());
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Boolean>());
+        JSONXX_ASSERT(v.get<Boolean>());
     }
     {
         string teststr("false");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Boolean>());
-        assert(!v.get<Boolean>());
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Boolean>());
+        JSONXX_ASSERT(!v.get<Boolean>());
     }
     {
         string teststr("null");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<Null>());
-        assert(!v.is<Boolean>());
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<Null>());
+        JSONXX_ASSERT(!v.is<Boolean>());
     }
     {
         string teststr("\"field1\"");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<String>());
-        assert("field1" == v.get<String>());
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<String>());
+        JSONXX_ASSERT("field1" == v.get<String>());
         ostringstream stream;
         stream << v;
-        assert(stream.str() == "\"field1\"");
+        JSONXX_ASSERT(stream.str() == "\"field1\"");
     }
     if( !Settings::Strict )
     {
         string teststr("'field1'");
         istringstream input(teststr);
         Value v;
-        assert(Value::parse(input, v));
-        assert(v.is<String>());
-        assert("field1" == v.get<String>());
+        JSONXX_ASSERT(Value::parse(input, v));
+        JSONXX_ASSERT(v.is<String>());
+        JSONXX_ASSERT("field1" == v.get<String>());
         ostringstream stream;
         stream << v;
-        assert(stream.str() == "\"field1\"");
+        JSONXX_ASSERT(stream.str() == "\"field1\"");
     }
     {
         string teststr("[\"field1\", 6]");
         istringstream input(teststr);
         Array a;
-        assert(Array::parse(input, a));
-        assert(a.has<String>(0));
-        assert("field1" == a.get<String>(0));
-        assert(a.has<Number>(1));
-        assert(6 == a.get<Number>(1));
-        assert(!a.has<Boolean>(2));
+        JSONXX_ASSERT(Array::parse(input, a));
+        JSONXX_ASSERT(a.has<String>(0));
+        JSONXX_ASSERT("field1" == a.get<String>(0));
+        JSONXX_ASSERT(a.has<Number>(1));
+        JSONXX_ASSERT(6 == a.get<Number>(1));
+        JSONXX_ASSERT(!a.has<Boolean>(2));
     }
     {
         string teststr(
@@ -208,32 +212,32 @@ int main() {
                        );
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
-        assert(1 == o.get<Number>("foo"));
-        assert(o.has<Boolean>("bar"));
-        assert(o.has<Object>("person"));
-        assert(o.get<Object>("person").has<Number>("age"));
-        assert(o.has<Array>("data"));
-        assert(o.get<Array>("data").get<Number>(1) == 42);
-        assert(o.get<Array>("data").get<String>(0) == "abcd");
-        assert(o.get<Array>("data").get<Number>(2) - 54.7 < 1e-6 ||
+        JSONXX_ASSERT(Object::parse(input, o));
+        JSONXX_ASSERT(1 == o.get<Number>("foo"));
+        JSONXX_ASSERT(o.has<Boolean>("bar"));
+        JSONXX_ASSERT(o.has<Object>("person"));
+        JSONXX_ASSERT(o.get<Object>("person").has<Number>("age"));
+        JSONXX_ASSERT(o.has<Array>("data"));
+        JSONXX_ASSERT(o.get<Array>("data").get<Number>(1) == 42);
+        JSONXX_ASSERT(o.get<Array>("data").get<String>(0) == "abcd");
+        JSONXX_ASSERT(o.get<Array>("data").get<Number>(2) - 54.7 < 1e-6 ||
              - o.get<Array>("data").get<Number>(2) + 54.7 < 1e-6 );
-        assert(!o.has<Number>("data"));
+        JSONXX_ASSERT(!o.has<Number>("data"));
     }
     {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
-        assert(o.has<String>("bar"));
-        assert(o.get<String>("bar") == "a\rb\nc\td");
+        JSONXX_ASSERT(Object::parse(input, o));
+        JSONXX_ASSERT(o.has<String>("bar"));
+        JSONXX_ASSERT(o.get<String>("bar") == "a\rb\nc\td");
     }
     {
         string teststr("[ ]");
         istringstream input(teststr);
         ostringstream output;
         Array root;
-        assert(Array::parse(input, root));
+        JSONXX_ASSERT(Array::parse(input, root));
         output << root;
     }
 
@@ -241,15 +245,15 @@ int main() {
         string teststr("{}");
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
+        JSONXX_ASSERT(Object::parse(input, o));
     }
 
     {
         string teststr("{\"attrs\":{}}");
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
-        assert(o.has<Object>("attrs"));
+        JSONXX_ASSERT(Object::parse(input, o));
+        JSONXX_ASSERT(o.has<Object>("attrs"));
     }
 
     {
@@ -265,9 +269,9 @@ int main() {
                        "\"country\":\"The Netherlands\"}}");
         istringstream input(teststr);
         Object o;
-        assert(Object::parse(input, o));
-        assert(o.has<Object>("place"));
-        assert(o.get<Object>("place").has<Object>("attributes"));
+        JSONXX_ASSERT(Object::parse(input, o));
+        JSONXX_ASSERT(o.has<Object>("place"));
+        JSONXX_ASSERT(o.get<Object>("place").has<Object>("attributes"));
     }
 
     if( !Settings::Strict )
@@ -320,18 +324,20 @@ int main() {
 
         Object o;
         if( o.parse(input) ) {
-            cout << o.xml(JSONx) << endl;            // XML output, JSONx flavor
-            cout << o.xml(JXML) << endl;             // XML output, JXML flavor
-            cout << o.xml(JXMLex) << endl;           // XML output, JXMLex flavor
+            if( be_verbose ) {
+                cout << o.xml(JSONx) << endl;            // XML output, JSONx flavor
+                cout << o.xml(JXML) << endl;             // XML output, JXML flavor
+                cout << o.xml(JXMLex) << endl;           // XML output, JXMLex flavor
+            }
         } else {
-            assert( !"provided JSON is valid. jsonxx::Object::operator<<() is broken!" );
+            JSONXX_ASSERT( !"provided JSON is valid. jsonxx::Object::operator<<() is broken!" );
         }
 
-        assert( jsonxx::validate(input) );
+        JSONXX_ASSERT( jsonxx::validate(input) );
     }
 
-#   define ASSERT_ARRAY(...)  do { istringstream is(#__VA_ARGS__); Array  a; assert(  Array::parse(is, a) ); } while(0)
-#   define ASSERT_OBJECT(...) do { istringstream is(#__VA_ARGS__); Object o; assert( Object::parse(is, o) ); } while(0)
+#   define ASSERT_ARRAY(...)  do { istringstream is(#__VA_ARGS__); Array  a; JSONXX_ASSERT(  Array::parse(is, a) ); } while(0)
+#   define ASSERT_OBJECT(...) do { istringstream is(#__VA_ARGS__); Object o; JSONXX_ASSERT( Object::parse(is, o) ); } while(0)
 
     // Four samples from www.json.org
     ASSERT_OBJECT( {
@@ -422,8 +428,8 @@ int main() {
         a << std::string("hello world");
         a << "hello world";
 
-        assert( jsonxx::Array().parse( a.json() ) );   // self-evaluation
-        assert( validate( a.json() ) );                // self-evaluation
+        JSONXX_ASSERT( jsonxx::Array().parse( a.json() ) );   // self-evaluation
+        JSONXX_ASSERT( validate( a.json() ) );                // self-evaluation
     }
 
     {
@@ -443,8 +449,8 @@ int main() {
 
         a << o;
 
-        assert( jsonxx::Array().parse( a.json() ) );   // self-evaluation
-        assert( validate( a.json() ) );                // self-evaluation
+        JSONXX_ASSERT( jsonxx::Array().parse( a.json() ) );   // self-evaluation
+        JSONXX_ASSERT( validate( a.json() ) );                // self-evaluation
     }
 
     {
@@ -459,8 +465,8 @@ int main() {
 
         o1 << "key3" << o2;
 
-        assert( jsonxx::Object().parse( o1.json() ) );  // self-evaluation
-        assert( validate( o1.json() ) );                // self-evaluation
+        JSONXX_ASSERT( jsonxx::Object().parse( o1.json() ) );  // self-evaluation
+        JSONXX_ASSERT( validate( o1.json() ) );                // self-evaluation
     }
 
     {
@@ -479,13 +485,15 @@ int main() {
         o << "object" << jsonxx::Object("child", "object");
         o << "undefined" << custom();
 
-        std::cout << o.write(JSON) << std::endl;        // same than o.json()
-        std::cout << o.write(JSONx) << std::endl;       // same than o.xml()
-        std::cout << o.write(JXML) << std::endl;        // same than o.xml(JXML)
-        std::cout << o.write(JXMLex) << std::endl;      // same than o.xml(JXMLex)
+        if( be_verbose ) {
+            cout << o.write(JSON) << std::endl;        // same than o.json()
+            cout << o.write(JSONx) << std::endl;       // same than o.xml()
+            cout << o.write(JXML) << std::endl;        // same than o.xml(JXML)
+            cout << o.write(JXMLex) << std::endl;      // same than o.xml(JXMLex)
+        }
 
-        assert( jsonxx::Object().parse( o.json() ) );   // self-evaluation
-        assert( validate( o.json() ) );                 // self-evaluation
+        JSONXX_ASSERT( jsonxx::Object().parse( o.json() ) );   // self-evaluation
+        JSONXX_ASSERT( validate( o.json() ) );                 // self-evaluation
     }
 
     {
@@ -494,7 +502,7 @@ int main() {
         a << 123;
         a << "hello world";
         a << a;
-        assert( a.size() == 4 );
+        JSONXX_ASSERT( a.size() == 4 );
     }
 
     {
@@ -503,7 +511,7 @@ int main() {
         o << "number" << 123;
         o << "string" << "world";
         o << "recursion" << o;
-        assert( o.size() == 3 );
+        JSONXX_ASSERT( o.size() == 3 );
     }
 
     if( !jsonxx::Settings::Strict )
@@ -519,7 +527,7 @@ int main() {
                 "} //this is comment #3"
        );
         jsonxx::Object o;
-        assert( o.parse(teststr) );
+        JSONXX_ASSERT( o.parse(teststr) );
     }
 
     cout << "All tests ok." << endl;

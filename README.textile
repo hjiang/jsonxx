@@ -25,9 +25,10 @@ Perhaps because web service clients are usually written in dynamic languages the
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
-h1. Notes about strict/permissive parsing
+h1. Notes about jsonxx::Settings values
 
-JSONxx can parse JSON documents in strict or permissive mode. 
+h2. Strict/permissive parsing
+JSONxx can parse JSON documents both in strict or permissive mode.
 
 When strict parsing is enabled, JSONxx parser will accept:
 * Fully conformant JSON documents *only*
@@ -38,7 +39,12 @@ When strict parsing is disabled, JSONxx parser will accept:
 * Single quoted strings: <code>['hello', "world"]</code>
 * C++ style comments: <code>{ "width": 320, "height": 240 } //Picture details</code>
 
-Strict parsing mode is disabled by default. Check jsonxx::Settings::Strict enum to tweak it.
+Set `jsonxx::Settings::Strict` value to `Enabled` or `Disabled` to enable or disable strict parsing. Default value is `Disabled`.
+
+h2. Assertions
+JSONxx uses internally `JSONXX_ASSERT(...)` macro that works both in debug and release mode.
+
+Set `jsonxx::Settings::Assertions` value to `Disabled` to disable assertions. Default value is `Enabled`.
 
 h1. Missing
 

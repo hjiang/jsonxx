@@ -32,10 +32,20 @@
 #define JSONXX_COMPILER_HAS_CXX11 0
 #endif
 
+#define JSONXX_ASSERT(...) do { if( jsonxx::Assertions ) \
+  jsonxx::assertion(__FILE__,__LINE__,#__VA_ARGS__,bool(__VA_ARGS__)); } while(0)
+
 namespace jsonxx {
 
+void assertion( const char *file, int line, const char *expression, bool result );
+
 enum Settings {
-  Strict = false     // true = strict parsing, false = permissive parsing
+  // constants
+  Enabled = true,
+  Disabled = false,
+  // values
+  Strict = Disabled,    // permissive parsing is enabled by default
+  Assertions = Enabled  // assertions enabled or disabled (these asserts work in any DEBUG or RELEASE build)
 };
 
 enum Format {
@@ -239,7 +249,7 @@ class Value {
         type_ = INVALID_;
         break;
       default:
-        assert( !"not implemented" );
+        JSONXX_ASSERT( !"not implemented" );
     }
   }
   template<typename T>
@@ -299,14 +309,14 @@ bool Array::has(unsigned int i) const {
 
 template <typename T>
 T& Array::get(unsigned int i) {
-  assert(i < size());
+  JSONXX_ASSERT(i < size());
   Value* v = values_.at(i);
   return v->get<T>();
 }
 
 template <typename T>
 const T& Array::get(unsigned int i) const {
-  assert(i < size());
+  JSONXX_ASSERT(i < size());
   const Value* v = values_.at(i);
   return v->get<T>();
 }
@@ -319,13 +329,13 @@ bool Object::has(const std::string& key) const {
 
 template <typename T>
 T& Object::get(const std::string& key) {
-  assert(has<T>(key));
+  JSONXX_ASSERT(has<T>(key));
   return value_map_.find(key)->second->get<T>();
 }
 
 template <typename T>
 const T& Object::get(const std::string& key) const {
-  assert(has<T>(key));
+  JSONXX_ASSERT(has<T>(key));
   return value_map_.find(key)->second->get<T>();
 }
 
@@ -361,61 +371,61 @@ inline bool Value::is<Object>() const {
 
 template<>
 inline bool& Value::get<Boolean>() {
-  assert(is<Boolean>());
+  JSONXX_ASSERT(is<Boolean>());
   return bool_value_;
 }
 
 template<>
 inline std::string& Value::get<String>() {
-  assert(is<String>());
+  JSONXX_ASSERT(is<String>());
   return *string_value_;
 }
 
 template<>
 inline Number& Value::get<Number>() {
-  assert(is<Number>());
+  JSONXX_ASSERT(is<Number>());
   return number_value_;
 }
 
 template<>
 inline Array& Value::get<Array>() {
-  assert(is<Array>());
+  JSONXX_ASSERT(is<Array>());
   return *array_value_;
 }
 
 template<>
 inline Object& Value::get<Object>() {
-  assert(is<Object>());
+  JSONXX_ASSERT(is<Object>());
   return *object_value_;
 }
 
 template<>
 inline const Boolean& Value::get<Boolean>() const {
-  assert(is<Boolean>());
+  JSONXX_ASSERT(is<Boolean>());
   return bool_value_;
 }
 
 template<>
 inline const String& Value::get<String>() const {
-  assert(is<String>());
+  JSONXX_ASSERT(is<String>());
   return *string_value_;
 }
 
 template<>
 inline const Number& Value::get<Number>() const {
-  assert(is<Number>());
+  JSONXX_ASSERT(is<Number>());
   return number_value_;
 }
 
 template<>
 inline const Array& Value::get<Array>() const {
-  assert(is<Array>());
+  JSONXX_ASSERT(is<Array>());
   return *array_value_;
 }
 
 template<>
 inline const Object& Value::get<Object>() const {
-  assert(is<Object>());
+  JSONXX_ASSERT(is<Object>());
   return *object_value_;
 }
 
