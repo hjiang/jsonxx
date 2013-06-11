@@ -45,7 +45,7 @@ bool parse_number(std::istream& input, Number* value);
 
 // Try to consume C++ comments from the input stream
 bool comment(std::istream &input) {
-    if( !Settings::Strict )
+    if( Parser == Permissive )
     if( !input.eof() )
     {
         char ch0(0);
@@ -106,7 +106,7 @@ bool match(const char* pattern, std::istream& input) {
 bool parse_string(std::istream& input, String* value) {
     char ch, delimiter = '"';
     if (!match("\"", input))  {
-        if (Settings::Strict) {
+        if (Parser == Strict) {
             return false;
         }
         delimiter = '\'';
@@ -187,7 +187,7 @@ static bool parse_null(std::istream& input) {
     if (match("null", input))  {
         return true;
     }
-    if (Settings::Strict) {
+    if (Parser == Strict) {
         return false;
     }
     return (input.peek()==',');
@@ -222,7 +222,7 @@ bool Object::parse(std::istream& input, Object& object) {
     do {
         std::string key;
         if (!parse_string(input, &key)) {
-            if (!Settings::Strict) {
+            if (Parser == Permissive) {
                 if (input.peek() == '}')
                     break;
             }
@@ -902,9 +902,6 @@ void Object::reset() {
   }
   value_map_.clear();
 }
-bool Object::operator<<(std::istream &input) {
-  return parse(input,*this);
-}
 bool Object::parse(std::istream &input) {
   return parse(input,*this);
 }
@@ -948,9 +945,6 @@ void Array::reset() {
     delete *i;
   }
   values_.clear();
-}
-bool Array::operator<<(std::istream &input) {
-  return parse(input,*this);
 }
 bool Array::parse(std::istream &input) {
   return parse(input,*this);

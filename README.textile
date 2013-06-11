@@ -27,24 +27,26 @@ Perhaps because web service clients are usually written in dynamic languages the
 
 h1. Notes about jsonxx::Settings values
 
-h2. Strict/permissive parsing
+h4. Strict/permissive parsing
+
 JSONxx can parse JSON documents both in strict or permissive mode.
 
-When strict parsing is enabled, JSONxx parser will accept:
+When <code>jsonxx::Settings::Parser</code> is set to <code>Strict</code>, JSONxx parser will accept:
 * Fully conformant JSON documents *only*
 
-When strict parsing is disabled, JSONxx parser will accept:
-* Fully conformant JSON documents, plus following *three additions*
+When <code>jsonxx::Settings::Parser</code> is set to <code>Permissive</code>, JSONxx parser will accept:
+* Fully conformant JSON documents
 * Ending commas in arrays and objects: <code>{ "array": [0,1,2,], }</code>
 * Single quoted strings: <code>['hello', "world"]</code>
 * C++ style comments: <code>{ "width": 320, "height": 240 } //Picture details</code>
 
-Set `jsonxx::Settings::Strict` value to `Enabled` or `Disabled` to enable or disable strict parsing. Default value is `Disabled`.
+Default value is <code>Permissive</code>.
 
-h2. Assertions
-JSONxx uses internally `JSONXX_ASSERT(...)` macro that works both in debug and release mode.
+h4. Assertions
 
-Set `jsonxx::Settings::Assertions` value to `Disabled` to disable assertions. Default value is `Enabled`.
+JSONxx uses internally <code>JSONXX_ASSERT(...)</code> macro that works both in debug and release mode. Set <code>jsonxx::Settings::Assertions</code> value to <code>Disabled</code> to disable assertions.
+
+Default value is <code>Enabled</code>.
 
 h1. Missing
 
