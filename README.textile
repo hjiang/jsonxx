@@ -25,7 +25,7 @@ Perhaps because web service clients are usually written in dynamic languages the
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 
-h1. Notes about jsonxx::Settings values
+h1. Configuration
 
 h4. Strict/permissive parsing
 
@@ -47,10 +47,6 @@ h4. Assertions
 JSONxx uses internally <code>JSONXX_ASSERT(...)</code> macro that works both in debug and release mode. Set <code>jsonxx::Settings::Assertions</code> value to <code>Disabled</code> to disable assertions.
 
 Default value is <code>Enabled</code>.
-
-h1. Missing
-
-* Custom JSON comments (C style /**/) when permissive parsing is enabled.
 
 h1. Usage
 
@@ -105,3 +101,7 @@ o << "key2" << 123;
 o << "key3" << a;
 cout << o.json() << endl;
 </pre>
+
+h1. To do
+
+* Custom JSON comments (C style /**/) when permissive parsing is enabled.
