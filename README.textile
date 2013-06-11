@@ -73,10 +73,6 @@ string teststr(
 Object o;
 assert(o.parse(teststr));
 
-// Same than above
-istringstream input(teststr);
-assert(Object::parse(input,o));
-
 // Validation. Checking for JSON types and values as well
 assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));

@@ -40,11 +40,148 @@ namespace jsonxx {
 //static_assert( sizeof(unsigned long long) < sizeof(long double), "'long double' cannot hold 64bit values in this compiler :(");
 
 bool match(const char* pattern, std::istream& input);
-bool parse_string(std::istream& input, String* value);
-bool parse_number(std::istream& input, Number* value);
+bool parse_array(std::istream& input, Array& array);
+bool parse_bool(std::istream& input, Boolean& value);
+bool parse_comment(std::istream &input);
+bool parse_null(std::istream& input);
+bool parse_number(std::istream& input, Number& value);
+bool parse_object(std::istream& input, Object& object);
+bool parse_string(std::istream& input, String& value);
+bool parse_value(std::istream& input, Value& value);
 
-// Try to consume C++ comments from the input stream
-bool comment(std::istream &input) {
+// Try to consume characters from the input stream and match the
+// pattern string.
+bool match(const char* pattern, std::istream& input) {
+    input >> std::ws;
+    const char* cur(pattern);
+    char ch(0);
+    while(input && !input.eof() && *cur != 0) {
+        input.get(ch);
+        if (ch != *cur) {
+            input.putback(ch);
+            if( parse_comment(input) )
+                continue;
+            while (cur > pattern) {
+                cur--;
+                input.putback(*cur);
+            }
+            return false;
+        } else {
+            cur++;
+        }
+    }
+    return *cur == 0;
+}
+
+bool parse_string(std::istream& input, String& value) {
+    char ch, delimiter = '"';
+    if (!match("\"", input))  {
+        if (Parser == Strict) {
+            return false;
+        }
+        delimiter = '\'';
+        if (input.peek() != delimiter) {
+            return false;
+        }
+        input.get(ch);
+    }
+    while(!input.eof() && input.good()) {
+        input.get(ch);
+        if (ch == delimiter) {
+            break;
+        }
+        if (ch == '\\') {
+            input.get(ch);
+            switch(ch) {
+                case '\\':
+                case '/':
+                    value.push_back(ch);
+                    break;
+                case 'b':
+                    value.push_back('\b');
+                    break;
+                case 'f':
+                    value.push_back('\f');
+                    break;
+                case 'n':
+                    value.push_back('\n');
+                    break;
+                case 'r':
+                    value.push_back('\r');
+                    break;
+                case 't':
+                    value.push_back('\t');
+                    break;
+                case 'u': {
+                        int i;
+                        std::stringstream ss;
+                        for( i = 0; (!input.eof() && input.good()) && i < 4; ++i ) {
+                            input.get(ch);
+                            ss << ch;
+                        }
+                        if( input.good() && (ss >> i) )
+                            value.push_back(i);
+                    }
+                    break;
+                default:
+                    if (ch != delimiter) {
+                        value.push_back('\\');
+                        value.push_back(ch);
+                    } else value.push_back(ch);
+                    break;
+            }
+        } else {
+            value.push_back(ch);
+        }
+    }
+    if (input && ch == delimiter) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool parse_number(std::istream& input, Number& value) {
+    input >> std::ws;
+    input >> value;
+    if (input.fail()) {
+        input.clear();
+        return false;
+    }
+    return true;
+}
+
+bool parse_bool(std::istream& input, Boolean& value) {
+    if (match("true", input))  {
+        value = true;
+        return true;
+    }
+    if (match("false", input)) {
+        value = false;
+        return true;
+    }
+    return false;
+}
+
+bool parse_null(std::istream& input) {
+    if (match("null", input))  {
+        return true;
+    }
+    if (Parser == Strict) {
+        return false;
+    }
+    return (input.peek()==',');
+}
+
+bool parse_array(std::istream& input, Array& array) {
+    return array.parse(input);
+}
+
+bool parse_object(std::istream& input, Object& object) {
+    return object.parse(input);
+}
+
+bool parse_comment(std::istream &input) {
     if( Parser == Permissive )
     if( !input.eof() )
     {
@@ -79,129 +216,10 @@ bool comment(std::istream &input) {
     return false;
 }
 
-// Try to consume characters from the input stream and match the
-// pattern string.
-bool match(const char* pattern, std::istream& input) {
-    input >> std::ws;
-    const char* cur(pattern);
-    char ch(0);
-    while(input && !input.eof() && *cur != 0) {
-        input.get(ch);
-        if (ch != *cur) {
-            input.putback(ch);
-            if( comment(input) )
-                continue;
-            while (cur > pattern) {
-                cur--;
-                input.putback(*cur);
-            }
-            return false;
-        } else {
-            cur++;
-        }
-    }
-    return *cur == 0;
+bool parse_value(std::istream& input, Value& value) {
+    return value.parse(input);
 }
 
-bool parse_string(std::istream& input, String* value) {
-    char ch, delimiter = '"';
-    if (!match("\"", input))  {
-        if (Parser == Strict) {
-            return false;
-        }
-        delimiter = '\'';
-        if (input.peek() != delimiter) {
-            return false;
-        }
-        input.get(ch);
-    }
-    while(!input.eof() && input.good()) {
-        input.get(ch);
-        if (ch == delimiter) {
-            break;
-        }
-        if (ch == '\\') {
-            input.get(ch);
-            switch(ch) {
-                case '\\':
-                case '/':
-                    value->push_back(ch);
-                    break;
-                case 'b':
-                    value->push_back('\b');
-                    break;
-                case 'f':
-                    value->push_back('\f');
-                    break;
-                case 'n':
-                    value->push_back('\n');
-                    break;
-                case 'r':
-                    value->push_back('\r');
-                    break;
-                case 't':
-                    value->push_back('\t');
-                    break;
-                case 'u': {
-                        int i;
-                        std::stringstream ss;
-                        for( i = 0; (!input.eof() && input.good()) && i < 4; ++i ) {
-                            input.get(ch);
-                            ss << ch;
-                        }
-                        if( input.good() && (ss >> i) )
-                            value->push_back(i);
-                    }
-                    break;
-                default:
-                    if (ch != delimiter) {
-                        value->push_back('\\');
-                        value->push_back(ch);
-                    } else value->push_back(ch);
-                    break;
-            }
-        } else {
-            value->push_back(ch);
-        }
-    }
-    if (input && ch == delimiter) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-static bool parse_bool(std::istream& input, Boolean* value) {
-    if (match("true", input))  {
-        *value = true;
-        return true;
-    }
-    if (match("false", input)) {
-        *value = false;
-        return true;
-    }
-    return false;
-}
-
-static bool parse_null(std::istream& input) {
-    if (match("null", input))  {
-        return true;
-    }
-    if (Parser == Strict) {
-        return false;
-    }
-    return (input.peek()==',');
-}
-
-bool parse_number(std::istream& input, Number* value) {
-    input >> std::ws;
-    input >> *value;
-    if (input.fail()) {
-        input.clear();
-        return false;
-    }
-    return true;
-}
 
 Object::Object() : value_map_() {}
 
@@ -221,7 +239,7 @@ bool Object::parse(std::istream& input, Object& object) {
 
     do {
         std::string key;
-        if (!parse_string(input, &key)) {
+        if (!parse_string(input, key)) {
             if (Parser == Permissive) {
                 if (input.peek() == '}')
                     break;
@@ -232,7 +250,7 @@ bool Object::parse(std::istream& input, Object& object) {
             return false;
         }
         Value* v = new Value();
-        if (!Value::parse(input, *v)) {
+        if (!parse_value(input, *v)) {
             delete v;
             break;
         }
@@ -268,18 +286,18 @@ bool Value::parse(std::istream& input, Value& value) {
     value.reset();
 
     std::string string_value;
-    if (parse_string(input, &string_value)) {
+    if (parse_string(input, string_value)) {
         value.string_value_ = new std::string();
         value.string_value_->swap(string_value);
         value.type_ = STRING_;
         return true;
     }
-    if (parse_number(input, &value.number_value_)) {
+    if (parse_number(input, value.number_value_)) {
         value.type_ = NUMBER_;
         return true;
     }
 
-    if (parse_bool(input, &value.bool_value_)) {
+    if (parse_bool(input, value.bool_value_)) {
         value.type_ = BOOL_;
         return true;
     }
@@ -289,14 +307,14 @@ bool Value::parse(std::istream& input, Value& value) {
     }
     if (input.peek() == '[') {
         value.array_value_ = new Array();
-        if (Array::parse(input, *value.array_value_)) {
+        if (parse_array(input, *value.array_value_)) {
             value.type_ = ARRAY_;
             return true;
         }
         delete value.array_value_;
     }
     value.object_value_ = new Object();
-    if (Object::parse(input, *value.object_value_)) {
+    if (parse_object(input, *value.object_value_)) {
         value.type_ = OBJECT_;
         return true;
     }
@@ -319,7 +337,7 @@ bool Array::parse(std::istream& input, Array& array) {
 
     do {
         Value* v = new Value();
-        if (!Value::parse(input, *v)) {
+        if (!parse_value(input, *v)) {
             delete v;
             break;
         }
@@ -775,14 +793,14 @@ bool validate( std::istream &input ) {
     if( input.peek() == '{' )
     {
         jsonxx::Object o;
-        if( o.parse( input, o ) )
+        if( parse_object( input, o ) )
             return true;
     }
     else
     if( input.peek() == '[' )
     {
         jsonxx::Array a;
-        if( a.parse( input, a ) )
+        if( parse_array( input, a ) )
             return true;
     }
 
@@ -807,14 +825,14 @@ std::string xml( std::istream &input, unsigned format ) {
     if( input.peek() == '{' )
     {
         jsonxx::Object o;
-        if( o.parse( input, o ) )
+        if( parse_object( input, o ) )
             return o.xml(format);
     }
     else
     if( input.peek() == '[' )
     {
         jsonxx::Array a;
-        if( a.parse( input, a ) )
+        if( parse_array( input, a ) )
             return a.xml(format);
     }
 
@@ -983,6 +1001,13 @@ bool Value::empty() const {
   if( type_ == ARRAY_ && array_value_ == 0 ) return true;
   if( type_ == OBJECT_ && object_value_ == 0 ) return true;
   return false;
+}
+bool Value::parse(std::istream &input) {
+  return parse(input,*this);
+}
+bool Value::parse(const std::string &input) {
+  std::istringstream is( input );
+  return parse(is,*this);
 }
 
 }  // namespace jsonxx

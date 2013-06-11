@@ -81,8 +81,6 @@ class Object {
   Object();
   ~Object();
 
-  static bool parse(std::istream& input, Object& object);
-
   template <typename T>
   bool has(const std::string& key) const;
 
@@ -121,7 +119,8 @@ class Object {
     return *this << Value(value), *this;
   }
 
- private:
+ protected:
+  static bool parse(std::istream& input, Object& object);
   container value_map_;
   std::string odd;
 };
@@ -130,8 +129,6 @@ class Array {
  public:
   Array();
   ~Array();
-
-  static bool parse(std::istream& input, Array& array);
 
   size_t size() const;
   bool empty() const;
@@ -163,7 +160,8 @@ class Array {
   Array &operator=(const Value &value);
   Array(const Array &other);
   Array(const Value &value);
- private:
+ protected:
+  static bool parse(std::istream& input, Array& array);
   container values_;
 };
 
@@ -175,8 +173,6 @@ class Value {
   Value();
   ~Value() { reset(); }
   void reset();
-
-  static bool parse(std::istream& input, Value& value);
 
   template<typename T>
   void import( const T &t ) {
@@ -278,6 +274,9 @@ class Value {
   template<size_t N>
   Value( const char (&t)[N] ) : type_(INVALID_) { import( std::string(t) ); }
 
+  bool parse(std::istream &input);
+  bool parse(const std::string &input);
+
   template<typename T>
   bool is() const;
   template<typename T>
@@ -304,6 +303,9 @@ class Value {
     Array* array_value_;
     Object* object_value_;
   };
+
+protected:
+  static bool parse(std::istream& input, Value& value);
 };
 
 template <typename T>

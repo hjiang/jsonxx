@@ -12,8 +12,8 @@
 #include "jsonxx.h"
 
 namespace jsonxx {
-    extern bool parse_string(std::istream& input, String* value);
-    extern bool parse_number(std::istream& input, Number* value);
+    extern bool parse_string(std::istream& input, String& value);
+    extern bool parse_number(std::istream& input, Number& value);
     extern bool match(const char* pattern, std::istream& input);
 }
 
@@ -29,16 +29,17 @@ bool is_asserting() {
 
 struct custom_type {};      // Used in a test elsewhere
 
-int main() {
+int main(int argc, const char **argv) {
 
     if( !is_asserting() ) {
         std::cout << "JSONXX_ASSERT(...) is not working. Assertions are disabled somehow. Tests aborted." << std::endl;
         return -1;
     }
 
-    enum {
-        verbose = false
-    };
+    bool verbose = false;
+    if( argc > 1 && (std::string(argv[1]) == "-v")) {
+        verbose = true;
+    }
 
     using namespace jsonxx;
     using namespace std;
@@ -46,7 +47,7 @@ int main() {
         string teststr("\"field1\"");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "field1");
     }
     if( !Strict )
@@ -54,14 +55,14 @@ int main() {
         string teststr("'field1'");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "field1");
     }
     {
         string teststr("\"  field1\"");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "  field1");
     }
     if( !Strict )
@@ -69,14 +70,14 @@ int main() {
         string teststr("'  field1'");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "  field1");
     }
     {
         string teststr("  \"field1\"");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "field1");
     }
     if( !Strict )
@@ -84,7 +85,7 @@ int main() {
         string teststr("  'field1'");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST(value == "field1");
     }
     {
@@ -92,14 +93,14 @@ int main() {
         string teststr("\"\\b\\f\\n\\r\\t\\u0014\\u0002\"");
         string value;
         istringstream input(teststr);
-        TEST(parse_string(input, &value));
+        TEST(parse_string(input, value));
         TEST( value == "\b\f\n\r\t\xe\x2" );
     }
     {
         string teststr("6");
         istringstream input(teststr);
         Number value;
-        TEST(parse_number(input, &value));
+        TEST(parse_number(input, value));
         TEST(value == 6);
     }
     {
@@ -111,19 +112,19 @@ int main() {
         string teststr("{ \"field1\" : 6 }");
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
     }
     {
         string teststr("{ \"field1 : 6 }");
         istringstream input(teststr);
         Object o;
-        TEST(!Object::parse(input, o));
+        TEST(!o.parse(input));
     }
     {
         string teststr("6");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Number>());
         TEST(v.get<Number>() == 6);
     }
@@ -131,7 +132,7 @@ int main() {
         string teststr("+6");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Number>());
         TEST(v.get<Number>() == 6);
     }
@@ -139,7 +140,7 @@ int main() {
         string teststr("-6");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Number>());
         TEST(v.get<Number>() == -6);
     }
@@ -147,13 +148,13 @@ int main() {
         string teststr("asdf");
         istringstream input(teststr);
         Value v;
-        TEST(!Value::parse(input, v));
+        TEST(!v.parse(input));
     }
     {
         string teststr("true");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Boolean>());
         TEST(v.get<Boolean>());
     }
@@ -161,7 +162,7 @@ int main() {
         string teststr("false");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Boolean>());
         TEST(!v.get<Boolean>());
     }
@@ -169,7 +170,7 @@ int main() {
         string teststr("null");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<Null>());
         TEST(!v.is<Boolean>());
     }
@@ -177,7 +178,7 @@ int main() {
         string teststr("\"field1\"");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<String>());
         TEST("field1" == v.get<String>());
         ostringstream stream;
@@ -189,7 +190,7 @@ int main() {
         string teststr("'field1'");
         istringstream input(teststr);
         Value v;
-        TEST(Value::parse(input, v));
+        TEST(v.parse(input));
         TEST(v.is<String>());
         TEST("field1" == v.get<String>());
         ostringstream stream;
@@ -200,7 +201,7 @@ int main() {
         string teststr("[\"field1\", 6]");
         istringstream input(teststr);
         Array a;
-        TEST(Array::parse(input, a));
+        TEST(a.parse(input));
         TEST(a.has<String>(0));
         TEST("field1" == a.get<String>(0));
         TEST(a.has<Number>(1));
@@ -218,7 +219,7 @@ int main() {
                        );
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
         TEST(1 == o.get<Number>("foo"));
         TEST(o.has<Boolean>("bar"));
         TEST(o.has<Object>("person"));
@@ -234,7 +235,7 @@ int main() {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
         TEST(o.has<String>("bar"));
         TEST(o.get<String>("bar") == "a\rb\nc\td");
     }
@@ -243,7 +244,7 @@ int main() {
         istringstream input(teststr);
         ostringstream output;
         Array root;
-        TEST(Array::parse(input, root));
+        TEST(root.parse(input));
         output << root;
     }
 
@@ -251,14 +252,14 @@ int main() {
         string teststr("{}");
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
     }
 
     {
         string teststr("{\"attrs\":{}}");
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
         TEST(o.has<Object>("attrs"));
     }
 
@@ -275,7 +276,7 @@ int main() {
                        "\"country\":\"The Netherlands\"}}");
         istringstream input(teststr);
         Object o;
-        TEST(Object::parse(input, o));
+        TEST(o.parse(input));
         TEST(o.has<Object>("place"));
         TEST(o.get<Object>("place").has<Object>("attributes"));
     }
