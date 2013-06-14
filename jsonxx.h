@@ -115,9 +115,7 @@ class Object {
     import(key,value);
   }
   template<typename T>
-  Object &operator<<(const T &value) {
-    return *this << Value(value), *this;
-  }
+  Object &operator<<(const T &value);
 
  protected:
   static bool parse(std::istream& input, Object& object);
@@ -438,6 +436,11 @@ template<>
 inline const Object& Value::get<Object>() const {
   JSONXX_ASSERT(is<Object>());
   return *object_value_;
+}
+
+template<typename T>
+inline Object &Object::operator<<(const T &value) {
+  return *this << Value(value), *this;
 }
 
 }  // namespace jsonxx
