@@ -56,7 +56,7 @@ enum Format {
   JXML   = 2,        // XML output, JXML   format. see https://github.com/r-lyeh/JXML
   JXMLex = 3,        // XML output, JXMLex format. see https://github.com/r-lyeh/JXMLex
 // TheMadButcher: Added JSONTaggedXML
-  JSONTaggedXML = 4  // XML output, XML Tagged format
+  JSONTaggedXML = 4  // XML output, XML Tagged format.
 };
 
 // Types
