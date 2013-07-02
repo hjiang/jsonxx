@@ -54,7 +54,9 @@ enum Format {
   JSON   = 0,        // JSON output
   JSONx  = 1,        // XML output, JSONx  format. see http://goo.gl/I3cxs
   JXML   = 2,        // XML output, JXML   format. see https://github.com/r-lyeh/JXML
-  JXMLex = 3         // XML output, JXMLex format. see https://github.com/r-lyeh/JXMLex
+  JXMLex = 3,        // XML output, JXMLex format. see https://github.com/r-lyeh/JXMLex
+// TheMadButcher: Added JSONTaggedXML
+  JSONTaggedXML = 4  // XML output, XML Tagged format
 };
 
 // Types
@@ -447,4 +449,4 @@ inline Object &Object::operator<<(const T &value) {
 
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Value& v);
 std::ostream& operator<<(std::ostream& stream, const jsonxx::Object& v);
-std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v);
+std::ostream& operator<<(std::ostream& stream, const jsonxx::Array& v); 
