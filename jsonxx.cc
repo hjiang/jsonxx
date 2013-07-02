@@ -74,7 +74,7 @@ bool match(const char* pattern, std::istream& input) {
 }
 
 bool parse_string(std::istream& input, String& value) {
-    char ch, delimiter = '"';
+    char ch = '\0', delimiter = '"';
     if (!match("\"", input))  {
         if (Parser == Strict) {
             return false;
@@ -622,12 +622,32 @@ std::string open_tag( unsigned format, char type, const std::string &name, const
                 case 'n': tagname = "json:number" + tagname; break;
             }
             break;
+
+        case jsonxx::TaggedXML: // @TheMadButcher
+            if( !name.empty() )
+                tagname = escape_attrib(name);
+            else
+                tagname = "JsonItem";
+            switch( type ) {
+                default:
+                case '0': tagname += " type=\"json:null\""; break;
+                case 'b': tagname += " type=\"json:boolean\""; break;
+                case 'a': tagname += " type=\"json:array\""; break;
+                case 's': tagname += " type=\"json:string\""; break;
+                case 'o': tagname += " type=\"json:object\""; break;
+                case 'n': tagname += " type=\"json:number\""; break;
+            }
+
+            if( !name.empty() )
+                tagname += std::string(" name=\"") + escape_string(name) + "\"";
+
+            break;
     }
 
     return std::string("<") + tagname + attr + ">";
 }
 
-std::string close_tag( unsigned format, char type ) {
+std::string close_tag( unsigned format, char type, const std::string &name ) {
     switch( format )
     {
         default:
@@ -647,6 +667,13 @@ std::string close_tag( unsigned format, char type ) {
                 case 's': return "</json:string>";
                 case 'n': return "</json:number>";
             }
+            break;
+
+        case jsonxx::TaggedXML: // @TheMadButcher
+            if( !name.empty() )
+                return "</"+escape_attrib(name)+">";
+            else
+                return "</JsonItem>";
     }
 }
 
@@ -664,7 +691,7 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
             ss << ( t.bool_value_ ? "true" : "false" );
             return tab + open_tag( format, 'b', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
-                       + close_tag( format, 'b' ) + '\n';
+                       + close_tag( format, 'b', name ) + '\n';
 
         case jsonxx::Value::ARRAY_:
             for(Array::container::const_iterator it = t.array_value_->values().begin(),
@@ -672,13 +699,13 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
               ss << tag( format, depth+1, std::string(), **it );
             return tab + open_tag( format, 'a', name, attr ) + '\n'
                        + ss.str()
-                 + tab + close_tag( format, 'a' ) + '\n';
+                 + tab + close_tag( format, 'a', name ) + '\n';
 
         case jsonxx::Value::STRING_:
             ss << escape_tag( *t.string_value_ );
             return tab + open_tag( format, 's', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
-                       + close_tag( format, 's' ) + '\n';
+                       + close_tag( format, 's', name ) + '\n';
 
         case jsonxx::Value::OBJECT_:
             for(Object::container::const_iterator it=t.object_value_->kv_map().begin(),
@@ -686,7 +713,7 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
               ss << tag( format, depth+1, it->first, *it->second );
             return tab + open_tag( format, 'o', name, attr ) + '\n'
                        + ss.str()
-                 + tab + close_tag( format, 'o' ) + '\n';
+                 + tab + close_tag( format, 'o', name ) + '\n';
 
         case jsonxx::Value::NUMBER_:
             // max precision
@@ -694,13 +721,16 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
             ss << t.number_value_;
             return tab + open_tag( format, 'n', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
-                       + close_tag( format, 'n' ) + '\n';
+                       + close_tag( format, 'n', name ) + '\n';
     }
 }
 
 // order here matches jsonxx::Format enum
 const char *defheader[] = {
     "",
+
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+         JSONXX_XML_TAG "\n",
 
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
          JSONXX_XML_TAG "\n",
@@ -719,6 +749,8 @@ const char *defrootattrib[] = {
     " xsi:schemaLocation=\"http://www.datapower.com/schemas/json jsonx.xsd\""
         " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
         " xmlns:json=\"http://www.ibm.com/xmlns/prod/2009/jsonx\"",
+
+    "",
 
     "",
 
@@ -744,7 +776,7 @@ std::string Object::json() const {
 
 std::string Object::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     jsonxx::Value v;
     v.object_value_ = const_cast<jsonxx::Object*>(this);
@@ -771,7 +803,7 @@ std::string Array::json() const {
 
 std::string Array::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     jsonxx::Value v;
     v.array_value_ = const_cast<jsonxx::Array*>(this);
@@ -815,7 +847,7 @@ bool validate( const std::string &input ) {
 
 std::string xml( std::istream &input, unsigned format ) {
     using namespace xml;
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     // trim non-printable chars
     for( char ch(0); !input.eof() && input.peek() <= 32; )

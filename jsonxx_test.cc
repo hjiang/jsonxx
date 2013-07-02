@@ -335,6 +335,7 @@ int main(int argc, const char **argv) {
                 cout << o.xml(JSONx) << endl;            // XML output, JSONx flavor
                 cout << o.xml(JXML) << endl;             // XML output, JXML flavor
                 cout << o.xml(JXMLex) << endl;           // XML output, JXMLex flavor
+                cout << o.xml(TaggedXML) << endl;        // XML output, tagged XML flavor
             }
         } else {
             TEST( !"provided JSON is valid. jsonxx::Object::operator<<() is broken!" );
