@@ -5,8 +5,8 @@
 //   Sean Middleditch <sean@middleditch.us>
 //   rlyeh <https://github.com/r-lyeh>
 
-// TheMadButcher: Added StdAfx.h precompiled header for my MFC applications
-#include <StdAfx.h>
+// TheMadButcher: For MFC applications uncomment the following line
+//#include <StdAfx.h>
 
 #include "jsonxx.h"
 
