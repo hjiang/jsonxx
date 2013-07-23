@@ -5,9 +5,6 @@
 //   Sean Middleditch <sean@middleditch.us>
 //   rlyeh <https://github.com/r-lyeh>
 
-// TheMadButcher: For MFC applications uncomment the following line
-//#include <StdAfx.h>
-
 #include "jsonxx.h"
 
 #include <cctype>
@@ -77,8 +74,7 @@ bool match(const char* pattern, std::istream& input) {
 }
 
 bool parse_string(std::istream& input, String& value) {
-// TheMadButcher: Default delimiter to "
-    char ch = 0, delimiter = '"';
+    char ch = '\0', delimiter = '"';
     if (!match("\"", input))  {
         if (Parser == Strict) {
             return false;
@@ -576,13 +572,28 @@ std::string escape_attrib( const std::string &input ) {
     return output;
 }
 
-std::string escape_tag( const std::string &input ) {
+std::string escape_tag( const std::string &input, unsigned format ) {	// TheMadButcher: Added format to handle & (and possibly other) characters for XML output formats
     static std::string map[256], *once = 0;
     if( !once ) {
         for( int i = 0; i < 256; ++i )
             map[ i ] = std::string() + char(i);
         map[ byte('<') ] = "&lt;";
         map[ byte('>') ] = "&gt;";
+
+		// TheMadButcher: handle & (and possibly other) characters for XML output formats
+		switch( format )
+		{
+			default:
+				break;
+
+			case jsonxx::JXML:
+			case jsonxx::JXMLex:
+			case jsonxx::JSONx:
+			case jsonxx::TaggedXML:
+		        map[ byte('&') ] = "&amp;";
+				break;
+		}
+
         once = map;
     }
     std::string output;
@@ -627,12 +638,11 @@ std::string open_tag( unsigned format, char type, const std::string &name, const
             }
             break;
 
-// TheMadButcher: Added JSONTaggedXML
-        case jsonxx::JSONTaggedXML:
+        case jsonxx::TaggedXML: // @TheMadButcher
             if( !name.empty() )
-                tagname = escape_string(name);
-    		else
-				tagname = "JsonItem";
+                tagname = escape_attrib(name);
+            else
+                tagname = "JsonItem";
             switch( type ) {
                 default:
                 case '0': tagname += " type=\"json:null\""; break;
@@ -643,10 +653,10 @@ std::string open_tag( unsigned format, char type, const std::string &name, const
                 case 'n': tagname += " type=\"json:number\""; break;
             }
 
-			if( !name.empty() )
-				tagname += std::string(" name=\"") + escape_string(name) + "\"";
+            if( !name.empty() )
+                tagname += std::string(" name=\"") + escape_string(name) + "\"";
 
-			break;
+            break;
     }
 
     return std::string("<") + tagname + attr + ">";
@@ -672,14 +682,13 @@ std::string close_tag( unsigned format, char type, const std::string &name ) {
                 case 's': return "</json:string>";
                 case 'n': return "</json:number>";
             }
-			break;
+            break;
 
-// TheMadButcher: Added JSONTaggedXML
-        case jsonxx::JSONTaggedXML:
+        case jsonxx::TaggedXML: // @TheMadButcher
             if( !name.empty() )
-	            return "</"+escape_string(name)+">";
-			else
-				return "</JsonItem>";
+                return "</"+escape_attrib(name)+">";
+            else
+                return "</JsonItem>";
     }
 }
 
@@ -708,7 +717,7 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
                  + tab + close_tag( format, 'a', name ) + '\n';
 
         case jsonxx::Value::STRING_:
-            ss << escape_tag( *t.string_value_ );
+            ss << escape_tag( *t.string_value_, format );		// TheMadButcher: handle & (and possibly other) characters for XML output formats
             return tab + open_tag( format, 's', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
                        + close_tag( format, 's', name ) + '\n';
@@ -782,8 +791,7 @@ std::string Object::json() const {
 
 std::string Object::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-// TheMadButcher: Added JSONTaggedXML
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::JSONTaggedXML);
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     jsonxx::Value v;
     v.object_value_ = const_cast<jsonxx::Object*>(this);
@@ -810,8 +818,7 @@ std::string Array::json() const {
 
 std::string Array::xml( unsigned format, const std::string &header, const std::string &attrib ) const {
     using namespace xml;
-// TheMadButcher: Added JSONTaggedXML
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::JSONTaggedXML );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     jsonxx::Value v;
     v.array_value_ = const_cast<jsonxx::Array*>(this);
@@ -855,8 +862,7 @@ bool validate( const std::string &input ) {
 
 std::string xml( std::istream &input, unsigned format ) {
     using namespace xml;
-// TheMadButcher: Added JSONTaggedXML
-    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::JSONTaggedXML );
+    JSONXX_ASSERT( format == jsonxx::JSONx || format == jsonxx::JXML || format == jsonxx::JXMLex || format == jsonxx::TaggedXML );
 
     // trim non-printable chars
     for( char ch(0); !input.eof() && input.peek() <= 32; )
@@ -1051,4 +1057,4 @@ bool Value::parse(const std::string &input) {
   return parse(is,*this);
 }
 
-}  // namespace jsonxx 
+}  // namespace jsonxx
