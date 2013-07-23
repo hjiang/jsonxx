@@ -24,6 +24,7 @@ Perhaps because web service clients are usually written in dynamic languages the
 * XML writer: convert documents to JSONx format. See http://goo.gl/I3cxs for details.
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
+* XML writer: convert documents to tagged XML format. See https://github.com/hjiang/jsonxx/issues/12 for details.
 
 h1. Configuration
 
