@@ -572,13 +572,27 @@ std::string escape_attrib( const std::string &input ) {
     return output;
 }
 
-std::string escape_tag( const std::string &input ) {
+std::string escape_tag( const std::string &input, unsigned format ) {
     static std::string map[256], *once = 0;
     if( !once ) {
         for( int i = 0; i < 256; ++i )
             map[ i ] = std::string() + char(i);
         map[ byte('<') ] = "&lt;";
         map[ byte('>') ] = "&gt;";
+
+        switch( format )
+        {
+            default:
+                break;
+
+            case jsonxx::JXML:
+            case jsonxx::JXMLex:
+            case jsonxx::JSONx:
+            case jsonxx::TaggedXML:
+                map[ byte('&') ] = "&amp;";
+                break;
+        }
+
         once = map;
     }
     std::string output;
@@ -702,7 +716,7 @@ std::string tag( unsigned format, unsigned depth, const std::string &name, const
                  + tab + close_tag( format, 'a', name ) + '\n';
 
         case jsonxx::Value::STRING_:
-            ss << escape_tag( *t.string_value_ );
+            ss << escape_tag( *t.string_value_, format );
             return tab + open_tag( format, 's', name, std::string(), format == jsonxx::JXMLex ? ss.str() : std::string() )
                        + ss.str()
                        + close_tag( format, 's', name ) + '\n';
