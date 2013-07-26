@@ -23,10 +23,6 @@ bool is_asserting() {
     return asserting;
 }
 
-#   define TEST(...)        JSONXX_ASSERT( __VA_ARGS__ )
-#   define TEST_ARRAY(...)  TEST( Array().parse(istringstream(#__VA_ARGS__).str()) )
-#   define TEST_OBJECT(...) TEST( Object().parse(istringstream(#__VA_ARGS__).str()) )
-
 struct custom_type {};      // Used in a test elsewhere
 
 int main(int argc, const char **argv) {
@@ -40,6 +36,12 @@ int main(int argc, const char **argv) {
     if( argc > 1 && (std::string(argv[1]) == "-v")) {
         verbose = true;
     }
+
+#   define TEST_ARRAY(...)  TEST( Array().parse(istringstream(#__VA_ARGS__).str()) )
+#   define TEST_OBJECT(...) TEST( Object().parse(istringstream(#__VA_ARGS__).str()) )
+#   define TEST(...) do { JSONXX_ASSERT( __VA_ARGS__ ); \
+    if( verbose ) std::cout << "[OK] " #__VA_ARGS__ << std::endl; \
+    } while(0)
 
     using namespace jsonxx;
     using namespace std;
@@ -435,6 +437,18 @@ int main(int argc, const char **argv) {
 
         TEST( jsonxx::Array().parse( a.json() ) );   // self-evaluation
         TEST( validate( a.json() ) );                // self-evaluation
+    }
+
+    {
+        jsonxx::Object o;
+        o << "hello" << "world";
+        o << "hola" << "mundo";
+        TEST( o.get<String>("hello") == "world" );
+        TEST( o.get<String>("hola") == "mundo" );
+        o << "hello" << "mundo";
+        o << "hola" << "world";
+        TEST( o.get<String>("hello") == "mundo" );
+        TEST( o.get<String>("hola") == "world" );
     }
 
     {
