@@ -596,7 +596,7 @@ std::string escape_tag( const std::string &input, unsigned format ) {
         once = map;
     }
     std::string output;
-    output.reserve( input.size() * 4 ); // worst scenario
+    output.reserve( input.size() * 5 ); // worst scenario
     for( std::string::const_iterator it = input.begin(), end = input.end(); it != end; ++it )
         output += map[ byte(*it) ];
     return output;
