@@ -174,7 +174,7 @@ class Value {
   void reset();
 
   template<typename T>
-  void import( const T &t ) {
+  void import( const T & ) {
     reset();
     type_ = INVALID_;
     // debug
@@ -204,12 +204,12 @@ class Value {
   $number( long double )
 #undef $number
 #if JSONXX_COMPILER_HAS_CXX11 > 0
-  void import( const std::nullptr_t &t ) {
+  void import( const std::nullptr_t & ) {
     reset();
     type_ = NULL_;
   }
 #endif
-  void import( const Null &t ) {
+  void import( const Null & ) {
     reset();
     type_ = NULL_;
   }
