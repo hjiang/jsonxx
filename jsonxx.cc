@@ -503,7 +503,7 @@ namespace json {
         return input;
     }
 
-    std::string tag( unsigned format, unsigned depth, const std::string &name, const jsonxx::Value &t, const std::string &attr = std::string() ) {
+    std::string tag( unsigned format, unsigned depth, const std::string &name, const jsonxx::Value &t) {
         std::stringstream ss;
         const std::string tab(depth, '\t');
 
