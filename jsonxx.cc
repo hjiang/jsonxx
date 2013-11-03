@@ -782,7 +782,7 @@ std::string Object::json() const {
     v.object_value_ = const_cast<jsonxx::Object*>(this);
     v.type_ = jsonxx::Value::OBJECT_;
 
-    std::string result = tag( jsonxx::JSON, 0, std::string(), v, std::string() );
+    std::string result = tag( jsonxx::JSON, 0, std::string(), v );
 
     v.object_value_ = 0;
     return remove_last_comma( result );
@@ -809,7 +809,7 @@ std::string Array::json() const {
     v.array_value_ = const_cast<jsonxx::Array*>(this);
     v.type_ = jsonxx::Value::ARRAY_;
 
-    std::string result = tag( jsonxx::JSON, 0, std::string(), v, std::string() );
+    std::string result = tag( jsonxx::JSON, 0, std::string(), v );
 
     v.array_value_ = 0;
     return remove_last_comma( result );
