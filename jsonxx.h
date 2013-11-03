@@ -67,6 +67,12 @@ class Value;
 class Object;
 class Array;
 
+// Identity meta-function
+template <typename T>
+struct identity {
+  typedef T type;
+};
+
 // Tools
 bool validate( const std::string &input );
 bool validate( std::istream &input );
@@ -91,6 +97,9 @@ class Object {
   T& get(const std::string& key);
   template <typename T>
   const T& get(const std::string& key) const;
+
+  template <typename T>
+  const T& get(const std::string& key, const typename identity<T>::type& default_value) const;
 
   size_t size() const;
   bool empty() const;
@@ -139,6 +148,9 @@ class Array {
   T& get(unsigned int i);
   template <typename T>
   const T& get(unsigned int i) const;
+
+  template <typename T>
+  const T& get(unsigned int i, const typename identity<T>::type& default_value) const;
 
   const std::vector<Value*>& values() const {
     return values_;
@@ -332,6 +344,16 @@ const T& Array::get(unsigned int i) const {
 }
 
 template <typename T>
+const T& Array::get(unsigned int i, const typename identity<T>::type& default_value) const {
+  if(i < size()) {
+    const Value* v = values_.at(i);
+    return v->get<T>();
+  } else {
+    return default_value;
+  }
+}
+
+template <typename T>
 bool Object::has(const std::string& key) const {
   container::const_iterator it(value_map_.find(key));
   return it != value_map_.end() && it->second->is<T>();
@@ -347,6 +369,15 @@ template <typename T>
 const T& Object::get(const std::string& key) const {
   JSONXX_ASSERT(has<T>(key));
   return value_map_.find(key)->second->get<T>();
+}
+
+template <typename T>
+const T& Object::get(const std::string& key, const typename identity<T>::type& default_value) const {
+  if (has<T>(key)) {
+    return value_map_.find(key)->second->get<T>();
+  } else {
+    return default_value;
+  }
 }
 
 template<>
