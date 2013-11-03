@@ -19,7 +19,7 @@ Perhaps because web service clients are usually written in dynamic languages the
 * Robust.
 * Small and convenient API. Most of the time, you only need to call one function and two function templates.
 * Easy to integrate. JSON++ only has one source file and one header file. Just compile the source file and link with your program.
-* Able to construct documents dinamically.
+* Able to construct documents dynamically.
 * JSON writer: write documents in JSON format.
 * XML writer: convert documents to JSONx format. See http://goo.gl/I3cxs for details.
 * XML writer: convert documents to JXML format. See https://github.com/r-lyeh/JXML for details.
@@ -75,9 +75,12 @@ assert(1 == o.get<Number>("foo"));
 assert(o.has<Boolean>("bar"));
 assert(o.has<Object>("person"));
 assert(o.get<Object>("person").has<Number>("age"));
+assert(!o.get<Object>("person").has<Boolean>("old"));
+assert(o.get<Object>("person").get<Boolean>("old", false));
 assert(o.has<Array>("data"));
 assert(o.get<Array>("data").get<Number>(1) == 42);
 assert(o.get<Array>("data").get<String>(0) == "abcd");
+assert(o.get<Array>("data").get<String>(2, "hello") == "hello");
 assert(!o.has<Number>("data"));
 cout << o.json() << endl;                     // JSON output
 cout << o.xml(JSONx) << endl;                 // JSON to XML conversion (JSONx subtype)
@@ -86,7 +89,7 @@ cout << o.xml(JXMLex) << endl;                // JSON to XML conversion (JXMLex 
 </pre>
 
 <pre>
-// Generate JSON document dinamically
+// Generate JSON document dynamically
 using namespace std;
 using namespace jsonxx;
 Array a;
