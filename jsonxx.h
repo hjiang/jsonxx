@@ -345,7 +345,7 @@ const T& Array::get(unsigned int i) const {
 
 template <typename T>
 const T& Array::get(unsigned int i, const typename identity<T>::type& default_value) const {
-  if(i < size()) {
+  if(has<T>(i)) {
     const Value* v = values_.at(i);
     return v->get<T>();
   } else {

@@ -283,6 +283,26 @@ int main(int argc, const char **argv) {
         TEST(o.get<Object>("place").has<Object>("attributes"));
     }
 
+
+    {
+        string teststr("{\"file\": \"test.txt\", \"types\": {\"one\": 1, \"two\": 2},"
+                       "\"list\": [\"string\", 10]}");
+        istringstream input(teststr);
+        Object o;
+        TEST(o.parse(input));
+        TEST(o.has<String>("file"));
+        TEST(o.has<Object>("types"));
+        TEST(o.get<String>("file", "lol.txt") == "test.txt");
+        TEST(o.get<Object>("types").has<Number>("one"));
+        TEST(!o.get<Object>("types").has<Number>("three"));
+        TEST(o.get<Object>("types").get<Number>("three", 3) == 3);
+        TEST(o.has<Array>("list"));
+        TEST(o.get<Array>("list").has<String>(0));
+        TEST(!o.get<Array>("list").has<String>(2));
+        TEST(o.get<Array>("list").get<String>(0) == "string");
+        TEST(o.get<Array>("list").get<String>(2, "test") == "test");
+    }
+
     if( !Strict )
     {
         #define QUOTE(...) #__VA_ARGS__
