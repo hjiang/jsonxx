@@ -55,6 +55,7 @@ bool match(const char* pattern, std::istream& input) {
     input >> std::ws;
     const char* cur(pattern);
     char ch(0);
+    std::streamsize at = input.rdbuf()->pubseekoff(0,input.cur);
     while(input && !input.eof() && *cur != 0) {
         input.get(ch);
         if (ch != *cur) {
@@ -65,6 +66,7 @@ bool match(const char* pattern, std::istream& input) {
                 cur--;
                 input.putback(*cur);
             }
+		    input.rdbuf()->pubseekpos(at);
             return false;
         } else {
             cur++;
@@ -333,6 +335,9 @@ bool Array::parse(std::istream& input, Array& array) {
 
     if (!match("[", input)) {
         return false;
+    }
+    if (match("]", input)) {
+        return true;
     }
 
     do {
