@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "jsonxx.h"
 
@@ -405,7 +406,7 @@ int main(int argc, const char **argv) {
     TEST_ARRAY( [1, 2, 3, [4, 5, [7, 8, 9], 6], 10] );
 
     // UTF-8
-    TEST_OBJECT( {"text":"は 2010/11/4 at 5:50 AM に 6'45\"/km のペースで 8.42 km を走りました http://go.nike.com/9rlcovd"} );
+    TEST_OBJECT( {"text":"? 2010/11/4 at 5:50 AM ? 6'45\"/km ????? 8.42 km ?????? http://go.nike.com/9rlcovd"} );
 
     // Escaped UTF-8
     TEST_OBJECT( {"text":"\u3050\u3089\u307e\u3041\u3067\u3061\u3085\u306d\u2665\u304a\u306f\u3088\u3046\u3067\u3059\uff01"} );
@@ -567,6 +568,17 @@ int main(int argc, const char **argv) {
        );
         jsonxx::Object o;
         TEST( o.parse(teststr) );
+    }
+
+    if( argc > 1 )
+    {
+        std::ifstream ifs( argv[1] );
+
+        if( ifs.good() ) {
+            TEST( jsonxx::validate(ifs) );            
+        } else {
+            cout << "Cant find '" << argv[1] << "'" << endl;
+        }
     }
 
     cout << "All tests ok." << endl;
