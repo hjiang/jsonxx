@@ -76,6 +76,8 @@ struct identity {
 // Tools
 bool validate( const std::string &input );
 bool validate( std::istream &input );
+std::string reformat( const std::string &input );
+std::string reformat( std::istream &input );
 std::string xml( const std::string &input, unsigned format = JSONx );
 std::string xml( std::istream &input, unsigned format = JSONx );
 

@@ -55,7 +55,6 @@ bool match(const char* pattern, std::istream& input) {
     input >> std::ws;
     const char* cur(pattern);
     char ch(0);
-    std::streamsize at = input.rdbuf()->pubseekoff(0,input.cur);
     while(input && !input.eof() && *cur != 0) {
         input.get(ch);
         if (ch != *cur) {
@@ -66,7 +65,6 @@ bool match(const char* pattern, std::istream& input) {
                 cur--;
                 input.putback(*cur);
             }
-		    input.rdbuf()->pubseekpos(at);
             return false;
         } else {
             cur++;
@@ -185,7 +183,7 @@ bool parse_object(std::istream& input, Object& object) {
 
 bool parse_comment(std::istream &input) {
     if( Parser == Permissive )
-    if( !input.eof() )
+    if( !input.eof() && input.peek() == '/' )
     {
         char ch0(0);
         input.get(ch0);
@@ -862,6 +860,36 @@ bool validate( std::istream &input ) {
 bool validate( const std::string &input ) {
     std::istringstream is( input );
     return jsonxx::validate( is );
+}
+
+std::string reformat( std::istream &input ) {
+
+    // trim non-printable chars
+    for( char ch(0); !input.eof() && input.peek() <= 32; )
+        input.get(ch);
+
+    // validate json
+    if( input.peek() == '{' )
+    {
+        jsonxx::Object o;
+        if( parse_object( input, o ) )
+            return o.json();
+    }
+    else
+    if( input.peek() == '[' )
+    {
+        jsonxx::Array a;
+        if( parse_array( input, a ) )
+            return a.json();
+    }
+
+    // bad json input
+    return std::string();
+}
+
+std::string reformat( const std::string &input ) {
+    std::istringstream is( input );
+    return jsonxx::reformat( is );
 }
 
 std::string xml( std::istream &input, unsigned format ) {

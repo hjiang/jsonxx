@@ -575,7 +575,9 @@ int main(int argc, const char **argv) {
         std::ifstream ifs( argv[1] );
 
         if( ifs.good() ) {
-            TEST( jsonxx::validate(ifs) );            
+            std::string read = jsonxx::reformat(ifs);
+            TEST( read.size() );
+            cout << read << endl;
         } else {
             cout << "Cant find '" << argv[1] << "'" << endl;
         }
