@@ -43,6 +43,11 @@ When <code>jsonxx::Settings::Parser</code> is set to <code>Permissive</code>, JS
 
 Default value is <code>Permissive</code>.
 
+When <code>jsonxx::Settings::UnquotedKeys</code> is set to <code>Enabled</code>, JSONxx parser will accept:
+* Unquoted keys: <code>{name: "world"}</code>
+
+Default value is <code>Disabled</code>.
+
 h4. Assertions
 
 JSONxx uses internally <code>JSONXX_ASSERT(...)</code> macro that works both in debug and release mode. Set <code>jsonxx::Settings::Assertions</code> value to <code>Disabled</code> to disable assertions.

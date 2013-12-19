@@ -47,6 +47,7 @@ bool parse_null(std::istream& input);
 bool parse_number(std::istream& input, Number& value);
 bool parse_object(std::istream& input, Object& object);
 bool parse_string(std::istream& input, String& value);
+bool parse_identifier(std::istream& input, String& value);
 bool parse_value(std::istream& input, Value& value);
 
 // Try to consume characters from the input stream and match the
@@ -132,6 +133,45 @@ bool parse_string(std::istream& input, String& value) {
             }
         } else {
             value.push_back(ch);
+        }
+    }
+    if (input && ch == delimiter) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool parse_identifier(std::istream& input, String& value) {
+    input >> std::ws;
+
+    char ch = '\0', delimiter = ':';
+    bool first = true;
+
+    while(!input.eof() && input.good()) {
+        input.get(ch);
+
+        if (ch == delimiter) {
+            input.unget();
+            break;
+        }
+
+        if(first) {
+            if ((ch != '_' && ch != '$') &&
+                    (ch < 'a' || ch > 'z') &&
+                    (ch < 'A' || ch > 'Z')) {
+                return false;
+            }
+            first = false;
+        }
+        if(ch == '_' || ch == '$' ||
+            (ch >= 'a' && ch <= 'z') ||
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch >= '0' && ch <= '9')) {
+            value.push_back(ch);            
+        }
+        else if(ch == '\t' || ch == ' ') {
+            input >> std::ws;
         }
     }
     if (input && ch == delimiter) {
@@ -239,12 +279,23 @@ bool Object::parse(std::istream& input, Object& object) {
 
     do {
         std::string key;
-        if (!parse_string(input, key)) {
-            if (Parser == Permissive) {
-                if (input.peek() == '}')
-                    break;
+        if(UnquotedKeys == Enabled) {
+            if (!parse_identifier(input, key)) {
+                if (Parser == Permissive) {
+                    if (input.peek() == '}')
+                        break;
+                }
+                return false;
             }
-            return false;
+        }
+        else {
+            if (!parse_string(input, key)) {
+                if (Parser == Permissive) {
+                    if (input.peek() == '}')
+                        break;
+                }
+                return false;
+            }
         }
         if (!match(":", input)) {
             return false;

@@ -113,6 +113,9 @@ int main(int argc, const char **argv) {
     }
     {
         string teststr("{ \"field1\" : 6 }");
+        if(UnquotedKeys == Enabled) {
+            teststr = "{ field1 : 6 }";
+        }
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -219,7 +222,16 @@ int main(int argc, const char **argv) {
                 "  \"person\" : {\"name\" : \"GWB\", \"age\" : 60},"
                 "  \"data\": [\"abcd\", 42, 54.7]"
                 "}"
-                       );
+                );
+        if(UnquotedKeys == Enabled) {
+            teststr = 
+                    "{"
+                    "  foo : 1,"
+                    "  bar : false,"
+                    "  person : {name : \"GWB\", age : 60},"
+                    "  data: [\"abcd\", 42, 54.7]"
+                    "}";
+        }
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -231,11 +243,14 @@ int main(int argc, const char **argv) {
         TEST(o.get<Array>("data").get<Number>(1) == 42);
         TEST(o.get<Array>("data").get<String>(0) == "abcd");
         TEST(o.get<Array>("data").get<Number>(2) - 54.7 < 1e-6 ||
-             - o.get<Array>("data").get<Number>(2) + 54.7 < 1e-6 );
+                - o.get<Array>("data").get<Number>(2) + 54.7 < 1e-6 );
         TEST(!o.has<Number>("data"));
     }
     {
         string teststr("{\"bar\": \"a\\rb\\nc\\td\", \"foo\": true}");
+        if(UnquotedKeys == Enabled) {
+            teststr = "{bar: \"a\\rb\\nc\\td\", foo: true}";
+        }
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -262,6 +277,9 @@ int main(int argc, const char **argv) {
 
     {
         string teststr("{\"attrs\":{}}");
+        if(UnquotedKeys == Enabled) {
+            teststr = "{attrs:{}}";
+        }
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -279,6 +297,19 @@ int main(int argc, const char **argv) {
                        "4ef0c00cbdff9ac8.json\",\"country_code\":\"NL\","
                        "\"id\":\"4ef0c00cbdff9ac8\","
                        "\"country\":\"The Netherlands\"}}");
+        if(UnquotedKeys == Enabled) {
+            teststr = "{place:{full_name:\"Limburg, The Netherlands\""
+                           ",attributes:{},name:\"Limburg\","
+                           "place_type:\"admin\",bounding_box:{"
+                           "type:\"Polygon\",coordinates:"
+                           "[[[5.5661376,50.750449],[6.2268848,50.750449],"
+                           "[6.2268848,51.7784841],[5.5661376,51.7784841]]]},"
+                           "url:\"http:\\/\\/api.twitter.com\\/1\\/geo\\/id\\/"
+                           "4ef0c00cbdff9ac8.json\",country_code:\"NL\","
+                           "id:\"4ef0c00cbdff9ac8\","
+                           "country:\"The Netherlands\"}}";
+        }
+
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -290,6 +321,10 @@ int main(int argc, const char **argv) {
     {
         string teststr("{\"file\": \"test.txt\", \"types\": {\"one\": 1, \"two\": 2},"
                        "\"list\": [\"string\", 10]}");
+        if(UnquotedKeys == Enabled) {
+            teststr = "{file: \"test.txt\", types: {one: 1, two: 2},"
+                           "list: [\"string\", 10]}";
+        }
         istringstream input(teststr);
         Object o;
         TEST(o.parse(input));
@@ -306,7 +341,7 @@ int main(int argc, const char **argv) {
         TEST(o.get<Array>("list").get<String>(2, "test") == "test");
     }
 
-    if( Parser != Strict )
+    if( Parser != Strict && UnquotedKeys == Disabled /* '/' not supported as an identifier */ ) 
     {
         #define QUOTE(...) #__VA_ARGS__
         string input = QUOTE(
@@ -367,6 +402,11 @@ int main(int argc, const char **argv) {
         }
 
         TEST( jsonxx::validate(input) );
+    }
+
+    if(UnquotedKeys == Enabled) {
+        cout << "Some of tests with 'UnquotedKeys = Enabled' ok." << endl;
+        return 0;
     }
 
     // Four samples from www.json.org
