@@ -611,11 +611,11 @@ std::string escape_attrib( const std::string &input ) {
     if( !once ) {
         for( int i = 0; i < 256; ++i )
             map[ i ] = "_";
-        for( int i = int('a'); i < int('z'); ++i )
+        for( int i = int('a'); i <= int('z'); ++i )
             map[ i ] = std::string() + char(i);
-        for( int i = int('A'); i < int('Z'); ++i )
+        for( int i = int('A'); i <= int('Z'); ++i )
             map[ i ] = std::string() + char(i);
-        for( int i = int('0'); i < int('9'); ++i )
+        for( int i = int('0'); i <= int('9'); ++i )
             map[ i ] = std::string() + char(i);
         once = map;
     }
