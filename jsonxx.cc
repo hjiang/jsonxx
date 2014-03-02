@@ -183,9 +183,11 @@ bool parse_identifier(std::istream& input, String& value) {
 
 bool parse_number(std::istream& input, Number& value) {
     input >> std::ws;
+    std::streampos rollback = input.tellg();
     input >> value;
     if (input.fail()) {
         input.clear();
+        input.seekg(rollback);
         return false;
     }
     return true;
