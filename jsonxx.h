@@ -382,6 +382,11 @@ const T& Object::get(const std::string& key, const typename identity<T>::type& d
     return default_value;
   }
 }
+    
+template<>
+inline bool Value::is<Value>() const {
+    return true;
+}
 
 template<>
 inline bool Value::is<Null>() const {
@@ -411,6 +416,16 @@ inline bool Value::is<Array>() const {
 template<>
 inline bool Value::is<Object>() const {
   return type_ == OBJECT_;
+}
+    
+template<>
+inline Value& Value::get<Value>() {
+    return *this;
+}
+    
+template<>
+inline const Value& Value::get<Value>() const {
+    return *this;
 }
 
 template<>
