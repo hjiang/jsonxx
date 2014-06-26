@@ -204,7 +204,7 @@ class Value {
   void import( const TYPE &n ) { \
     reset(); \
     type_ = NUMBER_; \
-    number_value_ = n; \
+    number_value_ = static_cast<long double>(n); \
   }
   $number( char )
   $number( int )
