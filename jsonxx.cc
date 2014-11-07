@@ -118,7 +118,7 @@ bool parse_string(std::istream& input, String& value) {
                         std::stringstream ss;
                         for( i = 0; (!input.eof() && input.good()) && i < 4; ++i ) {
                             input.get(ch);
-                            ss << ch;
+                            ss << std::hex << ch;
                         }
                         if( input.good() && (ss >> i) )
                             value.push_back(i);
