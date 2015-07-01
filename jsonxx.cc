@@ -168,7 +168,7 @@ bool parse_identifier(std::istream& input, String& value) {
             (ch >= 'a' && ch <= 'z') ||
             (ch >= 'A' && ch <= 'Z') ||
             (ch >= '0' && ch <= '9')) {
-            value.push_back(ch);            
+            value.push_back(ch);
         }
         else if(ch == '\t' || ch == ' ') {
             input >> std::ws;
@@ -1066,6 +1066,13 @@ Array::Array(const Array &other) {
 }
 Array::Array(const Value &value) {
   import(value);
+}
+void Array::append(const Array &other) {
+    if (this != &other) {
+        values_.push_back( new Value(other) );
+    } else {
+        append( Array(*this) );
+    }
 }
 void Array::import(const Array &other) {
   if (this != &other) {
