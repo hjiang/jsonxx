@@ -1,2 +1,3 @@
 language: cpp
 script: make test
+sudo: false
