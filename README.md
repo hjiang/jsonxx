@@ -35,6 +35,10 @@ Other contributors have sinced added more functionalities:
 * XML writer: convert documents to JXMLex format. See https://github.com/r-lyeh/JXMLex for details.
 * XML writer: convert documents to tagged XML format. See https://github.com/hjiang/jsonxx/issues/12 for details.
 
+## Compiler version
+
+You need a modern C++ compiler. For older compilers, please try [legacy branch](https://github.com/hjiang/jsonxx/tree/legacy).
+
 ## Configuration
 
 ### Strict/permissive parsing
