@@ -1,3 +1,4 @@
 jsonxx_test
 *.o
 *~
+jsonxx_test.dSYM/

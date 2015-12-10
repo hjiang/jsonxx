@@ -1,3 +1,7 @@
+# JSON++
+
+[![Build Status](https://travis-ci.org/hjiang/jsonxx.svg?branch=master)](https://travis-ci.org/hjiang/jsonxx)
+
 ## Introduction
 
 JSON++ is a light-weight JSON parser, writer and reader written in C++.
