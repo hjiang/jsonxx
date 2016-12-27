@@ -121,7 +121,7 @@ bool parse_string(std::istream& input, String& value) {
                             ss << std::hex << ch;
                         }
                         if( input.good() && (ss >> i) )
-                            value.push_back(i);
+                            value.push_back(static_cast<char>(i));
                     }
                     break;
                 default:
