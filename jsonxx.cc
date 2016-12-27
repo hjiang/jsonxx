@@ -77,7 +77,7 @@ bool match(const char* pattern, std::istream& input) {
 bool parse_string(std::istream& input, String& value) {
     char ch = '\0', delimiter = '"';
     if (!match("\"", input))  {
-        if (Parser == Strict) {
+        if (parser_is_strict()) {
             return false;
         }
         delimiter = '\'';
@@ -209,7 +209,7 @@ bool parse_null(std::istream& input) {
     if (match("null", input))  {
         return true;
     }
-    if (Parser == Strict) {
+    if (parser_is_strict()) {
         return false;
     }
     return (input.peek()==',');
@@ -224,7 +224,7 @@ bool parse_object(std::istream& input, Object& object) {
 }
 
 bool parse_comment(std::istream &input) {
-    if( Parser == Permissive )
+    if( parser_is_permissive() )
     if( !input.eof() && input.peek() == '/' )
     {
         char ch0(0);
@@ -281,9 +281,9 @@ bool Object::parse(std::istream& input, Object& object) {
 
     do {
         std::string key;
-        if(UnquotedKeys == Enabled) {
+        if (unquoted_keys_are_enabled()) {
             if (!parse_identifier(input, key)) {
-                if (Parser == Permissive) {
+                if (parser_is_permissive()) {
                     if (input.peek() == '}')
                         break;
                 }
@@ -292,7 +292,7 @@ bool Object::parse(std::istream& input, Object& object) {
         }
         else {
             if (!parse_string(input, key)) {
-                if (Parser == Permissive) {
+                if (parser_is_permissive()) {
                     if (input.peek() == '}')
                         break;
                 }
