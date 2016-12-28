@@ -307,7 +307,18 @@ bool Object::parse(std::istream& input, Object& object) {
             delete v;
             break;
         }
-        object.value_map_[key] = v;
+        // TODO(hjiang): Add an option to allow duplicated keys?
+        if (object.value_map_.find(key) == object.value_map_.end()) {
+          object.value_map_[key] = v;
+        } else {
+          if (parser_is_permissive()) {
+            delete object.value_map_[key];
+            object.value_map_[key] = v;
+          } else {
+            delete v;
+            return false;
+          }
+        }
     } while (match(",", input));
 
 
