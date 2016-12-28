@@ -51,6 +51,7 @@
 
 namespace jsonxx {
 
+// FIXME(hjiang): Those should really be dynamic.
 // Settings
 enum Settings {
   // constants
