@@ -13,6 +13,7 @@
 #include <sstream>
 #include <vector>
 #include <limits>
+#include <mutex>
 
 // Snippet that creates an assertion function that works both in DEBUG & RELEASE mode.
 // JSONXX_ASSERT(...) macro will redirect to this. assert() macro is kept untouched.
