@@ -377,6 +377,7 @@ bool Value::parse(std::istream& input, Value& value) {
             return true;
         }
         delete value.array_value_;
+        value.array_value_ = 0;
     }
     value.object_value_ = new Object();
     if (parse_object(input, *value.object_value_)) {
@@ -384,6 +385,7 @@ bool Value::parse(std::istream& input, Value& value) {
         return true;
     }
     delete value.object_value_;
+    value.object_value_ = 0;
     return false;
 }
 
