@@ -623,6 +623,22 @@ int main(int argc, const char **argv) {
         }
     }
 
+    {
+        const char * test = "abcmango";
+        Object obj;
+
+        obj << "test_1" << Value(test);
+        obj << "test_2" << test;
+        obj << "test_3" << String(test);
+
+        obj << "test_4" << Value("defbanana");
+        obj << "test_5" << "defbanana";
+        obj << "test_6" << String("defbanana");
+
+        TEST( obj.get<String>("test_1") == "abcmango" );
+        TEST( obj.get<String>("test_6") == "defbanana" );
+    }
+
     cout << "All tests ok." << endl;
     return 0;
 }
