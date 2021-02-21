@@ -186,7 +186,7 @@ class IOStateMasker {
     public:
     explicit IOStateMasker(std::istream& input): stream(input) {
        mask = input.exceptions();
-       input.exceptions(0);
+       input.exceptions(std::istream::goodbit);
     }
 
     ~IOStateMasker() {
