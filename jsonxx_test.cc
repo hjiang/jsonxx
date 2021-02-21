@@ -121,6 +121,16 @@ int main(int argc, const char **argv) {
         TEST(o.parse(input));
     }
     {
+        string teststr("{ \"field1\" : true }");
+        istringstream input(teststr);
+        istringstream::iostate old_mask = input.exceptions();
+        input.exceptions(istringstream::eofbit | istringstream::failbit |
+                         istringstream::badbit);
+        Object o;
+        TEST(o.parse(input));
+        input.exceptions(old_mask);
+    }
+    {
         string teststr("{ \"field1 : 6 }");
         istringstream input(teststr);
         Object o;
